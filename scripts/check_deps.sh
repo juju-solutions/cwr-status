@@ -1,3 +1,3 @@
-if [ ! -d cwr_venv ]; then
+if [ ! -d venv ]; then
     scripts/install_deps.sh
 fi

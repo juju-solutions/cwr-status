@@ -2,4 +2,4 @@
 .idea
 *.swp
 .coverage
-cwr_venv
+venv
