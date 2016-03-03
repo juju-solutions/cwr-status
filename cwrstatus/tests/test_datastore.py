@@ -14,7 +14,7 @@ class TestS3(TestCase):
         with s3conn_cxt as j_mock:
             with patch('cwrstatus.datastore.get_s3_access',
                        return_value=cred, autospec=True) as g_mock:
-                s3 = S3.factory('buck', 'dir')
+                s3 = S3.factory('cwr', 'dir')
                 self.assertTrue(isinstance(s3, S3))
                 self.assertEqual(s3.dir, 'dir')
                 self.assertEqual(('buck',), j_mock.mock_calls[1][1])
