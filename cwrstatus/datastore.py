@@ -32,15 +32,18 @@ class S3:
         bucket = conn.get_bucket(bucket)
         return cls(directory, access_key, secret_key, conn, bucket)
 
-    def list(self, skip_folder=True):
+    def list(self, skip_folder=True, filter_fun=None):
         """ List all objects in S3
 
         :param skip_folder: Skip listing folders
+        :param filter_fun: Filter function that return boolean
         :rtype: boto.s3.key.Key
         """
         path = self.dir if self.dir else ''
         for key in self.bucket.list(path):
             if skip_folder and key.name.endswith('/'):
+                continue
+            if filter_fun and not filter_fun(key.name):
                 continue
             yield key
 

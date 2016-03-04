@@ -1,18 +1,12 @@
-from unittest import TestCase
 
-from mock import (
-    patch,
-    MagicMock,
-)
-
-from cwrstatus.jobs import import_data
-import cwrstatus.datastore as datastore
-from cwrstatus.tests.test_datastore import (
-    FakeBucket
+from cwrstatus import import_data
+from cwrstatus.testing import (
+    DatastoreTest,
+    RequestTest
 )
 
 
-class TestImportData(TestCase):
+class TestImportData(RequestTest):
 
     def test_get_mata_data(self):
         path = 'cwr/cwr-test/1/result.json'
@@ -28,8 +22,13 @@ class TestImportData(TestCase):
             path = 'cwr/cwr-test/1/result.json'
             import_data.get_meta_data(path, 'fake')
 
-    def _from_s3(self):
-        fake_bucket = FakeBucket()
-        datastore.S3Connection = MagicMock(spec=['get_bucket'])
-        datastore.S3Connection.return_value.get_bucket.return_value = fake_bucket
+
+class TestImportDataDs(DatastoreTest):
+
+    def test_from_s3(self):
+        pass
+        # fake_bucket = FakeBucket()
+        # ds.S3Connection = MagicMock(spec=['get_bucket'])
+        # ds.S3Connection.return_value.get_bucket.return_value = fake_bucket
         # todo continue adding test
+        # import_data.from_s3()

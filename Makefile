@@ -2,7 +2,7 @@ clean:
 	find . -name '*.pyc' -delete
 
 test: check_deps
-	INI=test.ini venv/bin/nosetests --nocapture -v
+	INI=testing venv/bin/nosetests --nocapture -v -w $(shell pwd)/cwrstatus
 
 install_deps:
 	./scripts/install_deps.sh
