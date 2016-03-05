@@ -47,6 +47,14 @@ class S3:
                 continue
             yield key
 
+    def get(self, path, ensure=True):
+        if self.dir:
+            path = "{}/{}".format(self.dir, path)
+        key = self.bucket.get_key(path)
+        if ensure and not key:
+            raise ValueError('Key was not found from the path: {}'.format(path))
+        return key
+
 
 def get_s3_access():
     """Return S3 access and secret keys"""

@@ -22,12 +22,16 @@ class TestImportData(RequestTest):
             path = 'cwr/cwr-test/1/result.json'
             import_data.get_meta_data(path, 'fake')
 
+    def test_get_mata_data_uploader_number(self):
+        path = 'cwr/cwr-test/1/1234-result.json'
+        filename = import_data.get_meta_data(path, 'uploader_build_number')
+        self.assertEqual(filename, '1234')
+
     def test_get_artifacts(self):
         expected = [
-            "all-machines.log",
-            "cloud-init-output.log",
-            "cloud-init.log",
-            "machine-0.log"]
+            "git-result.json",
+            "git-result.svg"
+        ]
         build_info = make_build_info()
         output = import_data.get_artifacts(build_info)
         self.assertItemsEqual(output, expected)
@@ -70,13 +74,13 @@ class TestImportData(RequestTest):
 
 class TestImportDataDs(DatastoreTest):
 
-    def xxx_from_s3(self):
+    def test_from_s3(self):
         pass
         # fake_bucket = FakeBucket()
         # ds.S3Connection = MagicMock(spec=['get_bucket'])
         # ds.S3Connection.return_value.get_bucket.return_value = fake_bucket
         # todo continue adding test
-        # import_data.from_s3()
+        import_data.from_s3()
 
 
 def make_build_info():
@@ -112,31 +116,16 @@ def make_build_info():
             },
         ],
             "artifacts": [
-            {
-                "displayPath": "all-machines.log",
-                "fileName": "all-machines.log",
-                "relativePath": "logs/all-machines.log"
-            },
-            {
-                "displayPath": "cloud-init-output.log",
-                "fileName": "cloud-init-output.log",
-                "relativePath": "logs/cloud-init-output.log"
-            },
-            {
-                "displayPath": "cloud-init.log",
-                "fileName": "cloud-init.log",
-                "relativePath": "logs/cloud-init.log"
-            },
-            {
-                "displayPath": "empty",
-                "fileName": "empty",
-                "relativePath": "logs/empty"
-            },
-            {
-                "displayPath": "machine-0.log",
-                "fileName": "machine-0.log",
-                "relativePath": "logs/machine-0.log"
-            }
+        {
+            "relativePath": "logs/git-result.json",
+            "displayPath": "git-result.json",
+            "fileName": "git-result.json"
+        },
+        {
+            "relativePath": "logs/cs-result.svg",
+            "displayPath": "git--result.svg",
+            "fileName": "git-result.svg"
+        }
         ],
         "building": False,
         "duration": 751337,
