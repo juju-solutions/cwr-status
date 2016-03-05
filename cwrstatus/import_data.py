@@ -21,11 +21,28 @@ def get_artifacts(build_info):
             if x['fileName'] != 'empty']
 
 
+def get_parameters(build_info_parameters):
+    parameters = {}
+    for action in build_info_parameters.get('actions', []):
+        parameter_list = action.get('parameters', [])
+        parameters.update((p['name'], p['value']) for p in parameter_list)
+    if not parameters.get('bundle_name'):
+        raise ValueError("'bundle_name' must be set to a value.")
+    return parameters
+
+
 def _filter_fun(value):
     return value.endswith('result-results.json')
 
 
+def make_doc(build_info):
+    doc = get_parameters(build_info)
+    doc['build_info'] = build_info
+    return doc
+
+
 def from_s3():
+    """Import test results from S3 and insert it to database."""
     s3 = S3.factory(bucket='juju-qa-data', directory='cwr')
     for key in s3.list(filter_fun=_filter_fun):
         # Get job name
