@@ -1,14 +1,18 @@
 from cwrstatus.config import app, ds
 
-from datastore import Datastore
+from cwrstatus.import_data import from_s3
 
 
 @app.route('/')
 def index():
-    data = Datastore(app)
     user = ds.db.users.find_one({'_id': 'id'})
-    user = data.ds.db.users.find_one({'dd': 'dd'})
     return 'hello {}'.format(user)
+
+
+@app.route('/import-data')
+def import_data():
+    from_s3()
+    return 'done.'
 
 
 if __name__ == '__main__':

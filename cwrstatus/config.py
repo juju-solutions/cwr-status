@@ -20,8 +20,6 @@ def init():
                          "'production' or 'testing'")
     app.config.from_pyfile(config_file)
 
-app = Flask(__name__)
+app = Flask('cwr')
 init()
 ds = PyMongo(app)   # Data store
-
-

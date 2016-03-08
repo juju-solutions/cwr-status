@@ -1,8 +1,12 @@
-from unittest import TestCase
+import json
 
 from mock import patch
 
 from cwrstatus.datastore import S3
+from cwrstatus.testing import (
+    TestCase,
+    make_build_info
+)
 
 
 class TestS3(TestCase):
@@ -17,7 +21,7 @@ class TestS3(TestCase):
                 s3 = S3.factory('cwr', 'dir')
                 self.assertTrue(isinstance(s3, S3))
                 self.assertEqual(s3.dir, 'dir')
-                self.assertEqual(('buck',), j_mock.mock_calls[1][1])
+                self.assertEqual(('cwr',), j_mock.mock_calls[1][1])
                 s3.dir = 'new/dir'
                 self.assertEqual(s3.dir, 'new/dir')
         g_mock.assert_called_once_with()
@@ -39,14 +43,27 @@ class TestS3(TestCase):
             [x.name for x in all_list],
             [x.name for x in make_bucket_list()])
 
+    def filter_fun(self, value):
+        return value.endswith('result.json')
+
+    def test_list_filter(self):
+        fb = FakeBucket()
+        s3 = S3('cwr', None, None, None, fb)
+        all_list = list(s3.list(filter_fun=self.filter_fun))
+        self.assertItemsEqual(
+            [x.name for x in all_list],
+            [x.name for x in make_bucket_list()
+             if self.filter_fun(x.name)])
+
 
 def make_bucket_list():
     keys = [FakeKey('cwr/'),
-            FakeKey('cwr/cwr-test/1/r.json'),
-            FakeKey('cwr/cwr-test/1/r.html'),
-            FakeKey('cwr/cwr-test/1/r.svg'),
-            FakeKey('cwr/cwr-test/2/r.json'),
-            FakeKey('cwr/cwr-test/2/r.html')]
+            FakeKey('cwr/cwr-test/1/1234-result-results.json'),
+            FakeKey('cwr/cwr-test/1/1234-log-git-result.json'),
+            FakeKey('cwr/cwr-test/1/1234-log-git-result.svg'),
+            FakeKey('cwr/cwr-test/2/5679-result-results.json'),
+            FakeKey('cwr/cwr-test/2/5678-log-git-result.json'),
+            FakeKey('cwr/cwr-test/2/5678-log-git-result.svg')]
     return keys
 
 
@@ -54,6 +71,10 @@ class FakeKey:
 
     def __init__(self, name):
         self.name = name
+        self.etag = 'AB123'
+
+    def get_contents_as_string(self):
+        return json.dumps(make_build_info())
 
 
 class FakeBucket:
@@ -61,3 +82,6 @@ class FakeBucket:
     def list(self, path=None):
         for l in make_bucket_list():
             yield l
+
+    def get_key(self, path):
+        return FakeKey('cwr/cwr-test/1/1234-result-results.json')
