@@ -48,11 +48,19 @@ class S3:
             yield key
 
     def get(self, path, ensure=True):
+        """
+        Get an object from S3.
+
+        :param path: S3 path.
+        :param ensure: Ensure the object exists.
+        :rtype: boto.s3.key.Key
+        """
         if self.dir:
             path = "{}/{}".format(self.dir, path)
         key = self.bucket.get_key(path)
         if ensure and not key:
-            raise ValueError('Key was not found from the path: {}'.format(path))
+            raise ValueError(
+                'Key was not found from the path: {}'.format(path))
         return key
 
 

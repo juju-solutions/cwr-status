@@ -1,7 +1,12 @@
+import json
+
 from mock import patch
 
 from cwrstatus.datastore import S3
-from cwrstatus.testing import TestCase
+from cwrstatus.testing import (
+    TestCase,
+    make_build_info
+)
 
 
 class TestS3(TestCase):
@@ -53,11 +58,12 @@ class TestS3(TestCase):
 
 def make_bucket_list():
     keys = [FakeKey('cwr/'),
-            FakeKey('cwr/cwr-test/1/result.json'),
-            FakeKey('cwr/cwr-test/1/result.html'),
-            FakeKey('cwr/cwr-test/1/result.svg'),
-            FakeKey('cwr/cwr-test/2/result.json'),
-            FakeKey('cwr/cwr-test/2/result.html')]
+            FakeKey('cwr/cwr-test/1/1234-result-results.json'),
+            FakeKey('cwr/cwr-test/1/1234-log-git-result.json'),
+            FakeKey('cwr/cwr-test/1/1234-log-git-result.svg'),
+            FakeKey('cwr/cwr-test/2/5679-result-results.json'),
+            FakeKey('cwr/cwr-test/2/5678-log-git-result.json'),
+            FakeKey('cwr/cwr-test/2/5678-log-git-result.svg')]
     return keys
 
 
@@ -65,9 +71,10 @@ class FakeKey:
 
     def __init__(self, name):
         self.name = name
+        self.etag = 'AB123'
 
     def get_contents_as_string(self):
-        return ('The Dude abides')
+        return json.dumps(make_build_info())
 
 
 class FakeBucket:
@@ -75,3 +82,6 @@ class FakeBucket:
     def list(self, path=None):
         for l in make_bucket_list():
             yield l
+
+    def get_key(self, path):
+        return FakeKey('cwr/cwr-test/1/1234-result-results.json')

@@ -12,3 +12,7 @@ check_deps:
 
 lint:
 	venv/bin/flake8 cwrstatus
+
+coverage:
+	INI=testing venv/bin/nosetests --with-coverage  --cover-package=cwrstatus \
+	 -v -w $(shell pwd)/cwrstatus --cover-inclusive
