@@ -1,12 +1,128 @@
 import json
 
 from mock import patch
-
-from cwrstatus.datastore import S3
+from cwrstatus.datastore import (
+    Datastore,
+    S3,
+)
 from cwrstatus.testing import (
+    DatastoreTest,
     TestCase,
     make_build_info
 )
+
+
+class TestDatastore(DatastoreTest):
+
+    def test_get(self):
+        doc = self.make_doc()
+        self.update_data(doc)
+        ds = Datastore()
+        items = list(ds.get())
+        self.assertEqual(items, [doc])
+
+    def test_get_multiple(self):
+        doc = self.make_doc()
+        doc2 = self.make_doc(2)
+        self.update_data(doc)
+        self.update_data(doc2)
+        ds = Datastore()
+        items = list(ds.get())
+        self.assertEqual(items[0], doc2)
+        self.assertEqual(items[1], doc)
+
+    def test_get_filter(self):
+        doc = self.make_doc()
+        doc2 = self.make_doc(2)
+        self.update_data(doc)
+        self.update_data(doc2)
+        ds = Datastore()
+        items = list(ds.get(filter={'_id': doc['_id']}))
+        self.assertEqual(items, [doc])
+
+    def test_get_limit(self):
+        doc = self.make_doc(1)
+        doc2 = self.make_doc(2)
+        doc3 = self.make_doc(3)
+        self.update_data(doc)
+        self.update_data(doc2)
+        self.update_data(doc3)
+        ds = Datastore()
+        items = list(ds.get(limit=2))
+        self.assertEqual(items, [doc3, doc2])
+
+    def test_get_skip(self):
+        doc = self.make_doc(1)
+        doc2 = self.make_doc(2)
+        doc3 = self.make_doc(3)
+        self.update_data(doc)
+        self.update_data(doc2)
+        self.update_data(doc3)
+        ds = Datastore()
+        items = list(ds.get(skip=1))
+        self.assertEqual(items, [doc2, doc])
+
+    def test_get_one(self):
+        doc = self.make_doc()
+        doc2 = self.make_doc(2)
+        self.update_data(doc)
+        self.update_data(doc2)
+        ds = Datastore()
+        item = ds.get_one(filter={'_id': doc['_id']})
+        self.assertEqual(item, doc)
+
+    def test_get_by_bundle_name(self):
+        doc = self.make_doc(1)
+        doc2 = self.make_doc(2)
+        self.update_data(doc)
+        self.update_data(doc2)
+        ds = Datastore()
+        items = list(ds.get_by_bundle_name(doc['bundle_name']))
+        self.assertEqual(items, [doc])
+
+    def test_update(self):
+        doc = self.make_doc()
+        ds = Datastore()
+        with patch('cwrstatus.datastore.get_current_utc_time', autospec=True,
+                   return_value=doc['_updated_on']) as gcut_mock:
+            ds.update({"_id": doc["_id"]}, doc)
+        items = list(self.ds.db.cwr.find())
+        self.assertEqual(items, [doc])
+        gcut_mock.assert_called_once_with()
+
+    def test_update_existing_doc(self):
+        doc = self.make_doc()
+        ds = Datastore()
+        with patch('cwrstatus.datastore.get_current_utc_time', autospec=True,
+                   return_value=doc['_updated_on']):
+            ds.update({"_id": doc["_id"]}, doc)
+            items = list(self.ds.db.cwr.find())
+            self.assertEqual(items, [doc])
+
+            doc['bundle_name'] = 'new bundle'
+            ds.update({"_id": doc["_id"]}, doc)
+            items = list(self.ds.db.cwr.find())
+            self.assertEqual(items, [doc])
+
+    def test_update_and_get(self):
+        doc = self.make_doc()
+        ds = Datastore()
+        with patch('cwrstatus.datastore.get_current_utc_time', autospec=True,
+                   return_value=doc['_updated_on']) as gcut_mock:
+            ds.update({"_id": doc["_id"]}, doc)
+        items = list(ds.get())
+        self.assertEqual(items, [doc])
+        gcut_mock.assert_called_once_with()
+
+    def update_data(self, doc):
+        self.ds.db.cwr.update({'_id': doc['_id']}, doc, upsert=True)
+
+    def make_doc(self, count=1):
+        count = str(count)
+        return {
+            'bundle_name': 'openstack' + count,
+            '_id': 'foo' + count,
+            '_updated_on': count}
 
 
 class TestS3(TestCase):
