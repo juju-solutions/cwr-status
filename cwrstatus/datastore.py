@@ -15,21 +15,29 @@ class Datastore:
         self.limit = limit
 
     def get(self, filter=None, limit=None, skip=0, latest_first=True):
-        """ Return documents from the datastore.
+        """ Return documents from the collection.
 
         :param filter: dict specifying the filter elements.
         :param limit:  The maximum number of results to return.
         :param skip: The number of documents to omit.
         :param latest_first: Last in first out.
-        :return:
+        :rtype: pymongo.cursor.Cursor
         """
         limit = limit or self.limit
         sort = [('_updated_on', pymongo.DESCENDING)] if latest_first else None
         return self.collection.find(
             filter=filter, limit=limit, skip=skip, sort=sort)
 
+    def get_one(self, filter=None):
+        """ Return a document from the collection.
+
+        :param filter: dict specifying the filter elements.
+        :rtype: dict
+        """
+        return self.collection.find_one(filter=filter)
+
     def get_by_bundle_name(self, bundle_name, limit=None, skip=0):
-        """ Return documents filtered by bundle name.
+        """ Return documents filtered by a bundle name.
 
         See self.get() parameters for more info.
         """
@@ -37,7 +45,7 @@ class Datastore:
         return self.get(filter=filter, limit=limit, skip=skip)
 
     def update(self, _id, doc):
-        """Update a document(s) in this collection.
+        """Update a document in the collection.
 
          If the document doesn't exist, it will be created. If it exists, it
          will be updated.

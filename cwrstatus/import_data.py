@@ -1,12 +1,15 @@
 import json
 
-from cwrstatus.datastore import S3
-from cwrstatus.config import ds
+from cwrstatus.datastore import (
+    Datastore,
+    S3,
+)
 
 
 def from_s3():
     """Import test results from S3 and insert it to database."""
     s3 = S3.factory(bucket='juju-qa-data', directory='cwr')
+    ds = Datastore()
     for key in s3.list(filter_fun=_filter_fun):
         if not doc_needs_update(key):
             continue
@@ -20,7 +23,7 @@ def from_s3():
         test_key = s3.get(test_result_path)
         test = json.loads(test_key.get_contents_as_string())
         doc = make_doc(build_info, test, job_name, key)
-        ds.db.cwr.update({'_id': _get_id(key)}, doc, upsert=True)
+        ds.update({'_id': _get_id(key)}, doc)
 
 
 def get_meta_data(path, key):
@@ -122,7 +125,8 @@ def doc_needs_update(key):
     :rtype: boolean
     """
     _id = _get_id(key)
-    result = ds.db.cwr.find_one({"_id": _id})
+    ds = Datastore()
+    result = ds.get_one({'_id': _id})
     if result and result.get('etag') == key.etag:
         return False
     return True

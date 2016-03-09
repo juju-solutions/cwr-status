@@ -16,7 +16,7 @@ class TestDatastore(DatastoreTest):
 
     def test_get(self):
         doc = self.make_doc()
-        self.ds.db.cwr.update({'_id': doc['_id']}, doc, upsert=True)
+        self.update_data(doc)
         ds = Datastore()
         items = list(ds.get())
         self.assertEqual(items, [doc])
@@ -24,8 +24,8 @@ class TestDatastore(DatastoreTest):
     def test_get_multiple(self):
         doc = self.make_doc()
         doc2 = self.make_doc(2)
-        self.ds.db.cwr.update({'_id': doc['_id']}, doc, upsert=True)
-        self.ds.db.cwr.update({'_id': doc2['_id']}, doc2, upsert=True)
+        self.update_data(doc)
+        self.update_data(doc2)
         ds = Datastore()
         items = list(ds.get())
         self.assertEqual(items[0], doc2)
@@ -34,8 +34,8 @@ class TestDatastore(DatastoreTest):
     def test_get_filter(self):
         doc = self.make_doc()
         doc2 = self.make_doc(2)
-        self.ds.db.cwr.update({'_id': doc['_id']}, doc, upsert=True)
-        self.ds.db.cwr.update({'_id': doc2['_id']}, doc2, upsert=True)
+        self.update_data(doc)
+        self.update_data(doc2)
         ds = Datastore()
         items = list(ds.get(filter={'_id': doc['_id']}))
         self.assertEqual(items, [doc])
@@ -61,6 +61,15 @@ class TestDatastore(DatastoreTest):
         ds = Datastore()
         items = list(ds.get(skip=1))
         self.assertEqual(items, [doc2, doc])
+
+    def test_get_one(self):
+        doc = self.make_doc()
+        doc2 = self.make_doc(2)
+        self.update_data(doc)
+        self.update_data(doc2)
+        ds = Datastore()
+        item = ds.get_one(filter={'_id': doc['_id']})
+        self.assertEqual(item, doc)
 
     def test_get_by_bundle_name(self):
         doc = self.make_doc(1)
