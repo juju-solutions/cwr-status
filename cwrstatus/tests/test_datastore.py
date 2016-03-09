@@ -75,7 +75,7 @@ class TestDatastore(DatastoreTest):
         doc = self.make_doc()
         ds = Datastore()
         with patch('cwrstatus.datastore.get_current_utc_time', autospec=True,
-                return_value= doc['_updated_on']) as gcut_mock:
+                   return_value=doc['_updated_on']) as gcut_mock:
             ds.update({"_id": doc["_id"]}, doc)
         items = list(self.ds.db.cwr.find())
         self.assertEqual(items, [doc])
@@ -85,7 +85,7 @@ class TestDatastore(DatastoreTest):
         doc = self.make_doc()
         ds = Datastore()
         with patch('cwrstatus.datastore.get_current_utc_time', autospec=True,
-                return_value= doc['_updated_on']):
+                   return_value=doc['_updated_on']):
             ds.update({"_id": doc["_id"]}, doc)
             items = list(self.ds.db.cwr.find())
             self.assertEqual(items, [doc])
@@ -99,7 +99,7 @@ class TestDatastore(DatastoreTest):
         doc = self.make_doc()
         ds = Datastore()
         with patch('cwrstatus.datastore.get_current_utc_time', autospec=True,
-                return_value= doc['_updated_on']) as gcut_mock:
+                   return_value=doc['_updated_on']) as gcut_mock:
             ds.update({"_id": doc["_id"]}, doc)
         items = list(ds.get())
         self.assertEqual(items, [doc])
@@ -111,13 +111,9 @@ class TestDatastore(DatastoreTest):
     def make_doc(self, count=1):
         count = str(count)
         return {
-            'bundle_name' : 'openstack' + count,
+            'bundle_name': 'openstack' + count,
             '_id': 'foo' + count,
             '_updated_on': count}
-
-
-
-
 
 
 class TestS3(TestCase):

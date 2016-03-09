@@ -48,6 +48,7 @@ class Datastore:
         doc['_updated_on'] = get_current_utc_time()
         return self.collection.replace_one(_id, doc, upsert=True)
 
+
 class S3:
 
     def __init__(self, directory, access_key, secret_key, conn, bucket):
@@ -106,7 +107,6 @@ class S3:
             raise ValueError(
                 'Key was not found from the path: {}'.format(path))
         return key
-
 
 
 def get_s3_access():
