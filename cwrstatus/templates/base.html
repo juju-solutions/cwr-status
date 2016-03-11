@@ -97,10 +97,13 @@
                     <table>
                         {% for cwr_result in cwr_results %}
                             <tr>
-                                <td> <a href="{{ url_for('get_bundle', bundle=cwr_result['bundle_name']) }}">{{ cwr_result['bundle_name'] }}</a></td>
+                                <td class="bundle-name">
+                                    <a href="{{ url_for('get_bundle', bundle=cwr_result['bundle_name']) }}">
+                                        {{ cwr_result['bundle_name'] }}
+                                    </a>
+                                </td>
                                 <td>{{ cwr_result['test']['date'] | humanize_date }} </td>
-                                <td style="width: 300px;
-                                    ">
+                                <td class="bundle-status">
                                     {% for outcome in cwr_result['test']['results'] %}
                                         <table class="outcome">
                                             <tr>
