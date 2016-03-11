@@ -14,6 +14,14 @@ def index():
     return render_template('base.html', cwr_results=cwr_results)
 
 
+@app.route('/bundle/<bundle>')
+def get_bundle(bundle):
+    ds = Datastore()
+    filter = {'bundle_name': bundle}
+    cwr_results = ds.get(filter=filter)
+    return render_template('base.html', cwr_results=cwr_results)
+
+
 @app.route('/import-data')
 def import_data():
     from_s3()
