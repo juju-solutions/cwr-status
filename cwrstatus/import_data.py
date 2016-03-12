@@ -6,23 +6,25 @@ from cwrstatus.datastore import (
 )
 
 
-def from_s3():
+def from_s3(overwrite=False):
     """Import test results from S3 and insert it to database."""
     s3 = S3.factory(bucket='juju-qa-data', directory='cwr')
     ds = Datastore()
     for key in s3.list(filter_fun=_filter_fun):
-        if not doc_needs_update(key):
+        if not overwrite and not doc_needs_update(key):
             continue
         job_name = get_meta_data(key.name, 'job_name')
         build_number = get_meta_data(key.name, 'build_number')
         uploader_number = get_meta_data(key.name, 'uploader_build_number')
         build_info = json.loads(key.get_contents_as_string())
         artifacts = get_artifacts(build_info)
-        test_result_path = get_test_path(artifacts, job_name, build_number,
-                                         uploader_number)
+        test_result_path = get_test_path(
+            artifacts, job_name, build_number, uploader_number)
+        svg_path = get_svg_path(
+            artifacts, job_name, build_number, uploader_number)
         test_key = s3.get(test_result_path)
         test = json.loads(test_key.get_contents_as_string())
-        doc = make_doc(build_info, test, job_name, key)
+        doc = make_doc(build_info, test, job_name, key, artifacts, svg_path)
         ds.update({'_id': _get_id(key)}, doc)
 
 
@@ -77,7 +79,7 @@ def _filter_fun(value):
     return value.endswith('result-results.json')
 
 
-def make_doc(build_info, test, job_name, key):
+def make_doc(build_info, test, job_name, key, artifacts, svg_path):
     """Create doc that will be inserted into the database.
 
     :param build_info: Jenkins build info
@@ -90,6 +92,8 @@ def make_doc(build_info, test, job_name, key):
     doc['build_info'] = build_info
     doc['test'] = test
     doc['job_name'] = job_name
+    doc['artifacts'] = artifacts
+    doc['svg_path'] = svg_path
     doc['etag'] = key.etag
     return doc
 
@@ -108,14 +112,35 @@ def get_test_path(artifacts, job_name, build_number, uploader_build_number):
     if len(file_path) != 1:
         raise ValueError(
             'Expecting a single test result but got {}'.format(len(file_path)))
-    path = '{}/{}/{}-log-{}'.format(
+    return _make_path(
             job_name, build_number, uploader_build_number, file_path[0])
-    return path
+
+
+def get_svg_path(artifacts, job_name, build_number, uploader_build_number):
+    """ Return the svg to S3 storage.
+
+    :param artifacts:  List of artifacts
+    :param job_name:  Jenkins job name
+    :param build_number: Jenkins build number
+    :param uploader_build_number: Jenkins uploader build number
+    :return: S3 path.
+    :rtype: str
+    """
+    file_path = [a for a in artifacts if a.endswith('result.svg')]
+    if not file_path:
+        return None
+    return _make_path(
+            job_name, build_number, uploader_build_number, file_path[0])
+
+
+def _make_path(job_name, build_number, uploader_build_number, file_path):
+    return '{}/{}/{}-log-{}'.format(
+            job_name, build_number, uploader_build_number, file_path)
 
 
 def _get_id(key):
     """Return id for a document."""
-    return key.name
+    return key.name.replace('/', '_')
 
 
 def doc_needs_update(key):

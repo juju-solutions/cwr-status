@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+
+{% macro display_status_img(value, size='30px') -%}
+    {% if value == 'PASS' or value == 'All Passed' %}
+        <span class="test-result pass"></span>
+    {% elif value == 'FAIL' or value == 'All Failed' %}
+        <span class="test-result fail"></span>
+    {% elif value == 'Some Failed' %}
+        <span class="test-result fail"></span>
+    {% else %}
+        <span class="test-result no-result"></span>
+    {% endif %}
+{%- endmacro %}
+
+
+{% block content %}
+            <div class="row no-border box">
+                <h3>Recent results</h3>
+                <div class="twelve-col">
+                    <table>
+                        {% for cwr_result in cwr_results %}
+                            <tr>
+                                <td class="bundle-name">
+                                    <a href="{{ url_for('recent_by_bundle', bundle=cwr_result['bundle_name']) }}">
+                                        {{ cwr_result['bundle_name'] }}
+                                    </a>
+                                </td>
+                                <td>{{ cwr_result['test']['date'] | humanize_date }} </td>
+                                <td class="bundle-status">
+                                    {% for outcome in cwr_result['test']['results'] %}
+                                        <table class="outcome">
+                                            <tr>
+                                                <td> {{ outcome.get("provider_name") }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>{{ display_status_img(outcome.get("test_outcome")) }}</td>
+                                            </tr>
+                                        </table>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+{% endblock %}

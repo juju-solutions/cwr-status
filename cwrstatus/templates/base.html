@@ -1,125 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>{{ title }}</title>
-    <link rel="stylesheet" type="text/css" media="screen"
-          href="/static/css/ubuntu-styles.css">
-    <link rel="stylesheet" type="text/css" href="/static/css/base.css">
-    <script type='text/javascript' src='/static/js/jquery.min.js'></script>
-    <script type='text/javascript' src='/static/js/highcharts.js'></script>
-    <script type="text/javascript">
-        function hide_rows(name) {
-            name = '.' + name;
-            $(name).hide();
-            return false;
-        }
-        function toggle_rows(name) {
-            name = '.' + name;
-            $(name).toggle();
-            return false;
-        }
-        function display_chart(chart_data) {
-            chart_data = JSON.parse(chart_data);
-            h_charts = {
-                chart: {
-                    renderTo: 'containter',
-                    borderLeftWidth: 1,
-                    borderColor: '#eee',
-                    backgroundColor: null,
-                    color: '#333',
-                    style: {
-                        fontFamily: 'Ubuntu, Arial, "libra sans", sans-serif;',
-                    }
-                },
 
-                title: {
-                    text: 'Benchmark Results'
-                },
-                subtitle: {
-                    text: chart_data['title']
-                },
-                xAxis: {
-                    categories: []
-                },
-                yAxis: {
-                    title: {
-                        text: chart_data['yaxis_title']
-                    },
-                    plotLines: [{
-                        value: 0,
-                        width: 1,
-                        color: '#808080'
-                    }]
-                },
-                tooltip: {
-                    valueSuffix: chart_data['yaxis_title']
-                },
-                legend: {
-                    layout: 'vertical',
-                    align: 'right',
-                    verticalAlign: 'middle',
-                    borderWidth: 0
-                },
-                credits: {
-                    enabled: false
-                },
-                series: chart_data['series']
-            };
-            $('#container').highcharts(h_charts);
-        }
-    </script>
+
+        <meta charset="UTF-8">
+        <title>{{ title }}</title>
+        <link rel="stylesheet" type="text/css" media="screen"
+              href="/static/css/ubuntu-styles.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/base.css">
+
+    {% block head %}
+    {% endblock %}
+
 </head>
-{% macro display_status_img(value, size='30px') -%}
-    {% if value == 'PASS' or value == 'All Passed' %}
-        <span class="test-result pass"></span>
-    {% elif value == 'FAIL' or value == 'All Failed' %}
-        <span class="test-result fail"></span>
-    {% elif value == 'Some Failed' %}
-        <span class="test-result fail"></span>
-    {% else %}
-        <span class="test-result no-result"></span>
-    {% endif %}
-{%- endmacro %}
+
 <body class="details-page">
 <div class="container">
     <div class="wrapper">
         <div id="main-content">
 
-
             <div class="row">
                 <h2>Cloud Weather Report</h2>
             </div>
 
-            <div class="row no-border box">
-                <h3>Recent results</h3>
-                <div class="twelve-col">
-                    <table>
-                        {% for cwr_result in cwr_results %}
-                            <tr>
-                                <td class="bundle-name">
-                                    <a href="{{ url_for('get_bundle', bundle=cwr_result['bundle_name']) }}">
-                                        {{ cwr_result['bundle_name'] }}
-                                    </a>
-                                </td>
-                                <td>{{ cwr_result['test']['date'] | humanize_date }} </td>
-                                <td class="bundle-status">
-                                    {% for outcome in cwr_result['test']['results'] %}
-                                        <table class="outcome">
-                                            <tr>
-                                                <td> {{ outcome.get("provider_name") }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>{{ display_status_img(outcome.get("test_outcome")) }}</td>
-                                            </tr>
-                                        </table>
-                                    {% endfor %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </table>
-                </div>
-            </div>
+            {% block content %}
+            {% endblock %}
 
 
         </div>

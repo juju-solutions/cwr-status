@@ -1,13 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ title }}</title>
-    <link rel="stylesheet" type="text/css" media="screen" href="static/css/ubuntu-styles.css">
-    <link rel="stylesheet" type="text/css" href="static/css/base2.css">
-    <script type='text/javascript' src='static/js/jquery.min.js'></script>
-    <script type='text/javascript' src='static/js/highcharts.js'></script>
-    <script type="text/javascript">
+{% extends "base.html" %}
+
+{% block head %}
+
+        <script type='text/javascript' src='/static/js/jquery.min.js'></script>
+        <script type='text/javascript' src='/static/js/highcharts.js'></script>
+
+        <script type="text/javascript">
         function hide_rows(name) {
             name = '.' + name;
             $(name).hide();
@@ -18,19 +16,19 @@
             $(name).toggle();
             return false;
         }
-        function display_chart (chart_data) {
+        function display_chart(chart_data) {
             chart_data = JSON.parse(chart_data);
             h_charts = {
-                 chart: {
-                     renderTo: 'containter',
-                     borderLeftWidth: 1,
-                     borderColor: '#eee',
-                     backgroundColor: null,
-                     color: '#333',
-                     style : {
-                         fontFamily: 'Ubuntu, Arial, "libra sans", sans-serif;',
-                     }
-                 },
+                chart: {
+                    renderTo: 'containter',
+                    borderLeftWidth: 1,
+                    borderColor: '#eee',
+                    backgroundColor: null,
+                    color: '#333',
+                    style: {
+                        fontFamily: 'Ubuntu, Arial, "libra sans", sans-serif;',
+                    }
+                },
 
                 title: {
                     text: 'Benchmark Results'
@@ -68,7 +66,10 @@
             $('#container').highcharts(h_charts);
         }
     </script>
-</head>
+
+{% endblock %}
+
+
 {% macro display_status_img(value, size='30px') -%}
     {% if value == 'PASS' or value == 'All Passed' %}
         <span class="test-result pass"></span>
@@ -80,21 +81,13 @@
         <span class="test-result no-result"></span>
     {% endif %}
 {%- endmacro %}
-<body class="details-page">
-<div class="container">
 
 
-    <div class="wrapper">
-        <div id="main-content">
-
-            <div class="row">
-                <h2>Cloud Weather Report</h2>
-            </div>
-
+{% block content %}
             <div class="row no-border box">
                 <div class="twelve-col">
                         <div>
-                            <h3>{{ charm_name }}</h3>
+                            <h3>{{ bundle_name }}</h3>
                         </div>
                         <div class="dotted-border box-grey align-center">
                             {% if svg_path %}
@@ -152,7 +145,7 @@
                      <div class="eight-col no-border last-col no-margin-bottom">
                         <div id="container" class="chart"><div>
                         <script type="text/javascript">
-                            display_chart('{{ chart_data }}')
+                            display_chart('{{ chart_data|safe }}')
                         </script>
                     </div>
                 </div>
@@ -181,10 +174,5 @@
                 </div>
             </div>
 
+{% endblock %}
 
-        </div>
-    </div>
-</div>
-
-</body>
-</html>
