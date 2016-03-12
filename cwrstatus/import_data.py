@@ -91,6 +91,7 @@ def make_doc(build_info, test, job_name, key, artifacts, svg_path):
     doc = get_parameters(build_info)
     doc['build_info'] = build_info
     doc['test'] = test
+    doc['date'] = test.get('date')
     doc['job_name'] = job_name
     doc['artifacts'] = artifacts
     doc['svg_path'] = svg_path

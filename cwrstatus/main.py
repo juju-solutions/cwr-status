@@ -1,5 +1,4 @@
 from datetime import datetime
-import json
 
 from flask import (
     redirect,
@@ -42,10 +41,6 @@ def bundle_detail(key):
     results = bundle.test_result()
     history = None
     chart_data = bundle.generate_chart_data()
-
-
-    print "####'", chart_data, "####3"
-    #return render_template('bundle.html', results=cwr_result)
     return render_template(
         'bundle.html', bundle_name=bundle_name, results=results,
         svg_path=svg_path, history=history, chart_data=chart_data)

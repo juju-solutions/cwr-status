@@ -24,7 +24,7 @@ class Datastore:
         :rtype: pymongo.cursor.Cursor
         """
         limit = limit or self.limit
-        sort = [('_updated_on', pymongo.DESCENDING)] if latest_first else None
+        sort = [('date', pymongo.DESCENDING)] if latest_first else None
         return self.collection.find(
             filter=filter, limit=limit, skip=skip, sort=sort)
 

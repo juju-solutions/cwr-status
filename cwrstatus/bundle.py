@@ -42,6 +42,3 @@ class Bundle:
         if not svg_path:
             return 'No Image'
         return 'http://data.vapour.ws/cwr/{}'.format(svg_path)
-
-
-
