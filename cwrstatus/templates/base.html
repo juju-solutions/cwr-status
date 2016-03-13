@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+
+        <meta charset="UTF-8">
+        <title>{{ title }}</title>
+        <link rel="stylesheet" type="text/css" media="screen"
+              href="/static/css/ubuntu-styles.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/base.css">
+
+    {% block head %}
+    {% endblock %}
+
+</head>
+
+<body class="details-page">
+<div class="container">
+    <div class="wrapper">
+        <div id="main-content">
+
+            <div class="row">
+                <h2>Cloud Weather Report</h2>
+            </div>
+
+            {% block content %}
+            {% endblock %}
+
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

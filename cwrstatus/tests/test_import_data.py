@@ -80,10 +80,13 @@ class TestImportData(RequestTest):
 
     def test_make_doc(self):
         build_info = make_build_info()
-        test = "test 1"
+        test = {'date': '1'}
         job_name = 'cwr-test'
+        artifacts = ['foo', 'bar']
+        svg_path = 'path/to/svg'
         key = FakeKey(name='foo')
-        doc = import_data.make_doc(build_info, test, job_name, key)
+        doc = import_data.make_doc(
+            build_info, test, job_name, key, artifacts, svg_path)
         expected = {
             'bundle_name': 'git',
             'test_plan': 'git.yaml',
@@ -92,9 +95,12 @@ class TestImportData(RequestTest):
             'parent_build': '',
             'model': 'default-aws default-joyent',
             'build_info': build_info,
-            'test': 'test 1',
+            'test': test,
+            'date': test['date'],
             'job_name': 'cwr-test',
-            'etag': key.etag
+            'etag': key.etag,
+            'artifacts': artifacts,
+            'svg_path': 'path/to/svg',
         }
         self.assertEqual(doc, expected)
 
@@ -127,8 +133,8 @@ class TestImportDataDs(DatastoreTest):
         docs = list(self.ds.db.cwr.find())
         self.assertEqual(len(docs), 2)
         ids = [x['_id'] for x in docs]
-        self.assertItemsEqual(ids, ['cwr/cwr-test/1/1234-result-results.json',
-                                    'cwr/cwr-test/2/5679-result-results.json'])
+        self.assertItemsEqual(ids, ['cwr_cwr-test_1_1234-result-results.json',
+                                    'cwr_cwr-test_2_5679-result-results.json'])
         self.assertEqual(docs[0]['build_info'], make_build_info())
         self.assertEqual(docs[1]['build_info'], make_build_info())
         self.assertEqual(docs[0]['bundle_name'], "git")
@@ -138,10 +144,10 @@ class TestImportDataDs(DatastoreTest):
 
     def test_doc_needs_update_returns_false(self):
         build_info = make_build_info()
-        test = "test 1"
+        test = {'date': '1'}
         job_name = 'cwr-test'
         key = FakeKey(name='foo')
-        doc = import_data.make_doc(build_info, test, job_name, key)
+        doc = import_data.make_doc(build_info, test, job_name, key, None, None)
         self.ds.db.cwr.update(
             {'_id': import_data._get_id(key)}, doc, upsert=True)
         needs_update = import_data.doc_needs_update(key)

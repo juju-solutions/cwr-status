@@ -122,7 +122,9 @@ class TestDatastore(DatastoreTest):
         return {
             'bundle_name': 'openstack' + count,
             '_id': 'foo' + count,
-            '_updated_on': count}
+            '_updated_on': count,
+            'date': count
+        }
 
 
 class TestS3(TestCase):
