@@ -5,8 +5,9 @@
 
         <meta charset="UTF-8">
         <title>{{ title }}</title>
-        <link rel="stylesheet" type="text/css" media="screen"
-              href="/static/css/ubuntu-styles.css">
+        <!--link rel="stylesheet" type="text/css" media="screen" href="/static/css/ubuntu-styles.css" -->
+        <link rel="stylesheet" type="text/css" media="all"
+              href="http://assets.ubuntu.com/sites/guidelines/css/latest/ubuntu-styles.css"/>
         <link rel="stylesheet" type="text/css" href="/static/css/base.css">
 
     {% block head %}
@@ -15,19 +16,37 @@
 </head>
 
 <body class="details-page">
-<div class="container">
-    <div class="wrapper">
-        <div id="main-content">
 
-            <div class="row">
-                <h2>Cloud Weather Report</h2>
-            </div>
-
-            {% block content %}
-            {% endblock %}
-
-
+<header class="banner global" role="banner">
+    <nav role="navigation" class="nav-primary nav-right">
+        <div class="logo">
+            <a class="logo-ubuntu" style="background-image: none; margin: 0 20px 0 -100px" href="/">
+                <span>Cloud Weather Report</span>
+            </a>
         </div>
+        <ul>
+            <li>
+              <a href="/">Home</a>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+
+<div class="wrapper">
+
+    <div class="row no-border title-box">
+        {% block title %}
+
+        {% endblock %}
+    </div>
+
+    <div id="main-content" class="inner-wrapper">
+
+        {% block content %}
+        {% endblock %}
+
+
     </div>
 </div>
 

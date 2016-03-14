@@ -13,10 +13,12 @@
     {% endif %}
 {%- endmacro %}
 
+{% block title %}
+    {{ title }}
+{% endblock %}
 
 {% block content %}
             <div class="row no-border box">
-                <h3>Recent results</h3>
                 <div class="twelve-col">
                     <table>
                         {% for cwr_result in cwr_results %}
@@ -26,10 +28,15 @@
                                         {{ cwr_result['bundle_name'] }}
                                     </a>
                                 </td>
-                                <td>{{ cwr_result['test']['date'] | humanize_date }} </td>
-                                <td class="bundle-status">
+                                <td>
+                                    <a href="{{ url_for('bundle_view', key=cwr_result['_id']) }}">
+                                        {{ cwr_result['test']['date'] | humanize_date }}
+                                    </a>
+                                </td>
+                                <td class="bundle-status" onclick="window.location('{{ url_for('bundle_view', key=cwr_result['_id']) }}')"
+>
                                     {% for outcome in cwr_result['test']['results'] %}
-                                        <table class="outcome">
+                                        <table class="outcome" onclick="window.location='{{ url_for('bundle_view', key=cwr_result['_id']) }}'">
                                             <tr>
                                                 <td> {{ outcome.get("provider_name") }}</td>
                                             </tr>

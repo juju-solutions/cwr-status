@@ -20,7 +20,8 @@ def index():
 def recent():
     ds = Datastore()
     cwr_results = ds.get()
-    return render_template('recent.html', cwr_results=cwr_results)
+    title = 'Recent tests'
+    return render_template('recent.html', cwr_results=cwr_results, title=title)
 
 
 @app.route('/recent/<bundle>')
@@ -28,13 +29,17 @@ def recent_by_bundle(bundle):
     ds = Datastore()
     filter = {'bundle_name': bundle}
     cwr_results = ds.get(filter=filter)
-    return render_template('recent.html', cwr_results=cwr_results)
+    title = 'Recent tests: {}'.format(bundle)
+    return render_template('recent.html', cwr_results=cwr_results, title=title)
 
 
 @app.route('/bundle/<key>')
-def bundle_detail(key):
+def bundle_view(key):
     ds = Datastore()
     cwr_result = ds.get_one({'_id': key})
+    if not cwr_result:
+        return render_template('404.html', e='Bundle not found.'), 404
+
     bundle = Bundle(cwr_result)
     svg_path = bundle.svg_path()
     bundle_name = bundle.name
@@ -59,6 +64,10 @@ def humanize_date_filter(value, time_format=None):
     value = datetime.strptime(value, time_format)
     return value.strftime("%b %d, %Y at %H:%M")
 
+
+@app.errorhandler(404)
+def page_not_found(e):
+    render_template('404.html', e='Page not found'), 404
 
 if __name__ == '__main__':
     app.run()

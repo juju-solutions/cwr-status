@@ -82,14 +82,14 @@
     {% endif %}
 {%- endmacro %}
 
+{% block title %}
+    {{ bundle_name }}
+{% endblock %}
 
 {% block content %}
             <div class="row no-border box">
                 <div class="twelve-col">
-                        <div>
-                            <h3>{{ bundle_name }}</h3>
-                        </div>
-                        <div class="dotted-border box-grey align-center">
+                        <div class="dotted-border box-grey align-center" style="text-align: center">
                             {% if svg_path %}
                                 <img src="{{ svg_path }}" class="svg-img" />
                             {% else %}
@@ -104,7 +104,7 @@
 
                 <div class="twelve-col">
                     <div>
-                        <h3>Last run: {{ results["date"]|humanize_date }}</h3>
+                        <h3>Date: {{ results["date"]|humanize_date }}</h3>
                     </div>
                     <div class="four-col last-result-box">
                             <table class="last-result">
@@ -154,7 +154,6 @@
             <div class="row no-border box">
 
                 <div class="twelve-col no-margin-bottom">
-                    <h3>Report history</h3>
                     <table class="history">
                         {% if history %}
                             {% for provider, values in history.iteritems() %}
