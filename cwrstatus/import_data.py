@@ -141,7 +141,9 @@ def _make_path(job_name, build_number, uploader_build_number, file_path):
 
 def _get_id(key):
     """Return id for a document."""
-    return key.name.replace('/', '_')
+    job_name = get_meta_data(key.name, 'job_name')
+    build_number = get_meta_data(key.name, 'build_number')
+    return "{}-{}".format(job_name, build_number)
 
 
 def doc_needs_update(key):
