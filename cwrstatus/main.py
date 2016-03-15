@@ -1,8 +1,10 @@
 from datetime import datetime
+import os
 
 from flask import (
     redirect,
     render_template,
+    send_from_directory,
     url_for,
 )
 from cwrstatus.bundle import Bundle
@@ -68,6 +70,14 @@ def humanize_date_filter(value, time_format=None):
 @app.errorhandler(404)
 def page_not_found(e):
     render_template('404.html', e='Page not found'), 404
+
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(
+            os.path.join(app.root_path, 'static/images'),
+            'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
 
 if __name__ == '__main__':
     app.run()

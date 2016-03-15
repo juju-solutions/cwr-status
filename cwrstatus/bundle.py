@@ -32,9 +32,11 @@ class Bundle:
                        provider_name == test_result['provider_name']):
                         try:
                             values.append(
-                                test_result['benchmarks'][0].values()[0]["value"])
+                                test_result['benchmarks'][0].values()[0]
+                                ["value"])
                         except (KeyError, AttributeError):
-                            raise Exception('Non standardized benchmark format.')
+                            raise Exception(
+                                    'Non standardized benchmark format.')
 
         print "value: ", values
         return values
@@ -48,7 +50,7 @@ class Bundle:
         :rtype: dict
         """
         past_results = self.get_past_tests()
-        title = ''
+        title = 'No data'
         series = []
         yaxis_tilte = ''
         for test_result in self.test.get('results'):
@@ -80,5 +82,3 @@ class Bundle:
         if not svg_path:
             return 'No Image'
         return 'http://data.vapour.ws/cwr/{}'.format(svg_path)
-
-
