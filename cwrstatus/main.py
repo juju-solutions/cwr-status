@@ -7,6 +7,7 @@ from flask import (
     send_from_directory,
     url_for,
 )
+import humanize
 
 from cwrstatus.bundle import Bundle
 from cwrstatus.config import app
@@ -66,8 +67,7 @@ def import_data():
 def humanize_date_filter(value, time_format=None):
     iso_time_format = "%Y-%m-%dT%H:%M:%S"
     time_format = time_format or iso_time_format
-    value = datetime.strptime(value, time_format)
-    return value.strftime("%b %d, %Y at %H:%M")
+    return humanize.naturaltime(datetime.strptime(value, time_format))
 
 
 @app.errorhandler(404)
