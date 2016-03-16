@@ -7,6 +7,7 @@ from flask import (
     send_from_directory,
     url_for,
 )
+
 from cwrstatus.bundle import Bundle
 from cwrstatus.config import app
 from cwrstatus.import_data import from_s3
@@ -22,8 +23,9 @@ def index():
 def recent():
     ds = Datastore()
     cwr_results = ds.get()
-    title = 'Recent tests'
-    return render_template('recent.html', cwr_results=cwr_results, title=title)
+    bundle_title = 'Recent tests'
+    return render_template(
+            'recent.html', cwr_results=cwr_results, bundle_title=bundle_title)
 
 
 @app.route('/recent/<bundle>')
@@ -31,8 +33,9 @@ def recent_by_bundle(bundle):
     ds = Datastore()
     filter = {'bundle_name': bundle}
     cwr_results = ds.get(filter=filter)
-    title = 'Recent tests: {}'.format(bundle)
-    return render_template('recent.html', cwr_results=cwr_results, title=title)
+    bundle_title = 'Recent tests: {}'.format(bundle)
+    return render_template(
+        'recent.html', cwr_results=cwr_results, bundle_title=bundle_title)
 
 
 @app.route('/bundle/<key>')

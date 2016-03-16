@@ -6,27 +6,31 @@
         <meta charset="UTF-8">
         <title>{{ title }}</title>
         <!--link rel="stylesheet" type="text/css" media="screen" href="/static/css/ubuntu-styles.css" -->
-        <link rel="stylesheet" type="text/css" media="all"
-              href="http://assets.ubuntu.com/sites/guidelines/css/latest/ubuntu-styles.css"/>
-        <link rel="stylesheet" type="text/css" href="/static/css/base.css">
+        <link rel="stylesheet" type="text/css" media="screen" href="https://assets.ubuntu.com/v1/vanilla-framework-version-0.0.65.min.css">
+        <!-- link rel="stylesheet" type="text/css" media="all"
+              href="http://assets.ubuntu.com/sites/guidelines/css/latest/ubuntu-styles.css"/ -->
+        <link rel="stylesheet" type="text/css" href="/static/css/base.css" >
 
     {% block head %}
     {% endblock %}
 
 </head>
 
-<body class="details-page">
+<body class="homepage">
 
 <header class="banner global" role="banner">
-    <nav role="navigation" class="nav-primary nav-right">
+    <nav role="navigation" class="nav-primary nav-right" id="nav">
         <div class="logo">
-            <a class="logo-ubuntu" style="background-image: none; margin: 0 20px 0 -100px" href="/">
+            <a>
                 <span>Cloud Weather Report</span>
             </a>
         </div>
         <ul>
             <li>
               <a href="/">Home</a>
+            </li>
+            <li>
+                <a href="#">Bundles</a>
             </li>
         </ul>
     </nav>
@@ -35,16 +39,17 @@
 
 <div class="wrapper">
 
-    <div class="row no-border title-box">
-        {% block title %}
-
-        {% endblock %}
-    </div>
 
     <div id="main-content" class="inner-wrapper">
 
-        {% block content %}
-        {% endblock %}
+        <div class="row">
+                {% block bundle_title %}
+                {% endblock %}
+
+            {% block content %}
+            {% endblock %}
+        </div>
+
 
 
     </div>

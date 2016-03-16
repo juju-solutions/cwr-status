@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 
+{% block title %}
+    Result of recent tests
+{% endblock %}
 
 {% macro display_status_img(value, size='30px') -%}
     {% if value == 'PASS' or value == 'All Passed' %}
@@ -13,42 +16,59 @@
     {% endif %}
 {%- endmacro %}
 
-{% block title %}
-    {{ title }}
+
+{% block bundle_title %}
+    <h2> {{ bundle_title }} </h2>
 {% endblock %}
 
+
 {% block content %}
-            <div class="row no-border box">
-                <div class="twelve-col">
-                    <table>
-                        {% for cwr_result in cwr_results %}
-                            <tr>
-                                <td class="bundle-name">
-                                    <a href="{{ url_for('recent_by_bundle', bundle=cwr_result['bundle_name']) }}">
-                                        {{ cwr_result['bundle_name'] }}
-                                    </a>
-                                </td>
-                                <td>
-                                    <a href="{{ url_for('bundle_view', key=cwr_result['_id']) }}">
-                                        {{ cwr_result['test']['date'] | humanize_date }}
-                                    </a>
-                                </td>
-                                <td class="bundle-status" onclick="window.location('{{ url_for('bundle_view', key=cwr_result['_id']) }}')"
->
-                                    {% for outcome in cwr_result['test']['results'] %}
-                                        <table class="outcome" onclick="window.location='{{ url_for('bundle_view', key=cwr_result['_id']) }}'">
-                                            <tr>
-                                                <td> {{ outcome.get("provider_name") }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>{{ display_status_img(outcome.get("test_outcome")) }}</td>
-                                            </tr>
-                                        </table>
-                                    {% endfor %}
-                                </td>
-                            </tr>
+
+    <div class="twelve-col">
+
+        <table>
+            <thead>
+            <tr>
+                <th></th>
+                <th scope="col">Bundle</th>
+                <th scope="col">Date</th>
+                <th scope="col">Test Results</th>
+            </tr>
+            </thead>
+
+            {% for cwr_result in cwr_results %}
+                <tr>
+                    <td></td>
+                    <td class="bundle-status">
+                        <a href="{{ url_for('recent_by_bundle', bundle=cwr_result['bundle_name']) }}">
+                            {{ cwr_result['bundle_name'] }}
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('bundle_view', key=cwr_result['_id']) }}">
+                            {{ cwr_result['test']['date'] | humanize_date }}
+                        </a>
+                    </td>
+
+                    <td class="bundle-status" onclick="window.location('{{ url_for('bundle_view', key=cwr_result['_id']) }}')">
+
+                        {% for outcome in cwr_result['test']['results'] %}
+                            <table class="outcome" onclick="window.location='{{ url_for('bundle_view', key=cwr_result['_id']) }}'">
+                                <tr>
+                                    <td>
+                                        {{ outcome.get("provider_name") }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>{{ display_status_img(outcome.get("test_outcome")) }}</td>
+                                </tr>
+                            </table>
                         {% endfor %}
-                    </table>
-                </div>
-            </div>
+
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+
 {% endblock %}
