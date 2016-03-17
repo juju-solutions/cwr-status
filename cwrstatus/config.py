@@ -23,3 +23,4 @@ def init():
 app = Flask('cwr')
 init()
 ds = PyMongo(app)   # Data store
+PAGE_LIMIT = 20

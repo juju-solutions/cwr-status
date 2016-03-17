@@ -31,6 +31,10 @@ class RequestTest(TestCase):
         self.context = self.app.test_request_context('/')
         self.context.push()
 
+    def get(self, url):
+        client = self.context.app.test_client()
+        client.get(url)
+
     def tearDown(self):
         self.context.pop()
 

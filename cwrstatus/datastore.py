@@ -7,6 +7,8 @@ import pymongo
 from cwrstatus.config import ds
 from cwrstatus.utils import get_current_utc_time
 
+__metaclass__ = type
+
 
 class Datastore:
 
@@ -51,10 +53,23 @@ class Datastore:
          will be updated.
         :param _id: Document id.
         :param doc: Document data.
-        :return:
         """
         doc['_updated_on'] = get_current_utc_time()
         return self.collection.replace_one(_id, doc, upsert=True)
+
+    def distinct(self, key='bundle_name', limit=None, skip=0):
+        """Get a list of distinct values for key among all documents."""
+        limit = limit or self.limit
+        # todo: I don't like calling aggregate twice but I haven't found a way
+        # to count total number of distinct items.
+        distinct_col = self.collection.aggregate(
+            [{'$group': {'_id': '${}'.format(key), "count": {"$sum": 1}}}])
+        count = len(list(distinct_col))
+        return self.collection.aggregate(
+            [{'$group': {'_id': '${}'.format(key), "count": {"$sum": 1}}},
+             {'$skip': skip},
+             {'$limit': limit},
+             {"$sort": {"_id": 1}}]), count
 
 
 class S3:

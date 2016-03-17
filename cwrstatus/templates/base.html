@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-
         <meta charset="UTF-8">
         <title>{{ title }}</title>
         <!--link rel="stylesheet" type="text/css" media="screen" href="/static/css/ubuntu-styles.css" -->
@@ -15,6 +13,20 @@
     {% endblock %}
 
 </head>
+
+
+{% macro display_pagination(pagination) -%}
+    {% if pagination.has_prv %}
+        <div class="button--secondary">
+            <a href="{{ pagination.prv_page }}">&#171; Prv</a>
+        </div>
+    {% endif %}
+    {% if pagination.has_next %}
+        <div class="button--secondary">
+            <a href="{{ pagination.next_page }}">Next &#187;</a>
+        </div>
+    {% endif %}
+{%- endmacro %}
 
 <body class="homepage">
 
@@ -30,7 +42,7 @@
               <a href="/">Home</a>
             </li>
             <li>
-                <a href="#">Bundles</a>
+                <a href="/bundles">Bundles</a>
             </li>
         </ul>
     </nav>
