@@ -114,6 +114,25 @@ class TestDatastore(DatastoreTest):
         self.assertEqual(items, [doc])
         gcut_mock.assert_called_once_with()
 
+    def test_distinct(self):
+        doc = self.make_doc()
+        doc['bundle_name'] = 'foo'
+        self.update_data(doc)
+        doc = self.make_doc(2)
+        doc['bundle_name'] = 'foo'
+        self.update_data(doc)
+        doc = self.make_doc(3)
+        self.update_data(doc)
+        ds = Datastore()
+        distinct, count = ds.distinct()
+        distinct = list(distinct)
+        expected = [{'count': 2, '_id': 'foo'},
+                    {'count': 1, '_id': 'openstack3'}]
+        self.assertItemsEqual(distinct, expected)
+        self.assertEqual(count, 2)
+
+        doc = self.make_doc()
+
     def update_data(self, doc):
         self.ds.db.cwr.update({'_id': doc['_id']}, doc, upsert=True)
 

@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block title %}
+    {{ bundle_name }}
+{% endblock %}
+
 {% block head %}
 
         <script type='text/javascript' src='/static/js/jquery.min.js'></script>
@@ -26,7 +30,7 @@
                     backgroundColor: null,
                     color: '#333',
                     style: {
-                        fontFamily: 'Ubuntu, Arial, "libra sans", sans-serif;',
+                        fontFamily: 'Ubuntu, Arial, "libra sans", sans-serif;'
                     }
                 },
 
@@ -63,9 +67,20 @@
                 },
                 series: chart_data['series']
             };
-            $('#container').highcharts(h_charts);
+            $('#chart-container').highcharts(h_charts);
         }
+        function open_in_new_window(id_name) {
+            var w = window.open();
+            var text = $("#" + id_name).text();
+            if (! /\S/.test(text)) {
+                text = 'Empty'
+            }
+            var html = '<textarea style="width:100%; height:100%">' + text + '</textarea>';
+            $(w.document.body).html(html);
+        }
+
     </script>
+
 
 {% endblock %}
 
@@ -83,96 +98,83 @@
 {%- endmacro %}
 
 
+{% block bundle_title %}
+    <div>
+        <h2 class="align-center"> {{ bundle_name }} </h2>
+        <span>
+            Date: {{ results["date"]|humanize_date }}
+        </span>
+    </div>
+{% endblock %}
+
+
 {% block content %}
-            <div class="row no-border box">
-                <div class="twelve-col">
-                        <div>
-                            <h3>{{ bundle_name }}</h3>
-                        </div>
-                        <div class="dotted-border box-grey align-center">
-                            {% if svg_path %}
-                                <img src="{{ svg_path }}" class="svg-img" />
-                            {% else %}
-                                Image not available
-                            {% endif %}
-                        </div>
+
+    <div class="row">
+
+        <div class="six-col box no-border">
+            <table class="last-result">
+
+                {% for result in results['results'] %}
+                    {% set rowloop = loop %}
+                    <tr onclick="toggle_rows('t{{ rowloop.index }}');" class="result">
+                        <td colspan="4" class="cloud-list">
+                            <a href="javascript:;">{{ result["provider_name"] }}</a>
+                        </td>
+                        <td class="cloud-list">
+                            <a href="javascript:;">
+                                {{  display_status_img(result.get("test_outcome")) }}
+                            </a>
+                            <a href="javascript:;" >
+                                <span class="more">&raquo;</span>
+                            </a>
+                        </td>
+                    </tr>
+
+                    {% for test in result['tests'] %}
+                        <tr class="t{{ rowloop.index }} hide-it">
+                            <td colspan="4" class="" onclick="open_in_new_window('log-{{ rowloop.index }}{{ loop.index }}')">
+                                <a href="javascript:;">
+                                    {{ test["name"] }}
+                                </a>
+                            </td>
+                            <td class="">
+                                {{ display_status_img(test["result"]) }}
+                            </td>
+                        </tr>
+                        <tr class="output{{ rowloop.index }}{{ loop.index }} hide-it" id="log-{{ rowloop.index }}{{ loop.index }}">
+                            <td colspan="5">
+                                <textarea cols="7" disabled>
+                                    {{ test.get("output", "no output")|safe }}
+                                </textarea>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+            </table>
+        </div>
+
+        <div class="six-col last-col box">
+            <div class="align-center" style="text-align: center">
+                {% if svg_path %}
+                    <img src="{{ svg_path }}" class="svg-img"  alt="{{ bundle_name }}"/>
+                {% else %}
+                    Image not available
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="twelve-col">
+            <div id="chart-container" class="chart">
+                <div>
+                    <script type="text/javascript">
+                        display_chart('{{ chart_data|safe }}')
+                    </script>
                 </div>
             </div>
-
-
-            <div class="row no-border box">
-
-                <div class="twelve-col">
-                    <div>
-                        <h3>Last run: {{ results["date"]|humanize_date }}</h3>
-                    </div>
-                    <div class="four-col last-result-box">
-                            <table class="last-result">
-                                {% for result in results['results'] %}
-
-                                    {% set rowloop = loop %}
-                                    <tr onclick="toggle_rows('t{{ rowloop.index }}');" class="result">
-                                        <td colspan="4" class="rhead">
-                                            <a href="javascript:;">{{ result["provider_name"] }}</a>
-                                        </td>
-                                        <td class="rhead">
-                                            <a href="javascript:;">
-                                                {{  display_status_img(result.get("test_outcome")) }}
-                                            </a>
-                                            <a href="javascript:;" >
-                                                <span class="more">&raquo;</span>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    {% for test in result['tests'] %}
-                                        <tr class="t{{ rowloop.index }} hide-it">
-                                            <td colspan="4" class="" onclick="toggle_rows('output{{ rowloop.index }}{{ loop.index }}')">
-                                                <a href="javascript:;">{{ test["name"] }}</a>
-                                            </td>
-                                            <td class="">{{ display_status_img(test["result"]) }}</td>
-                                        </tr>
-                                        <tr class="output{{ rowloop.index }}{{ loop.index }} hide-it">
-                                            <td colspan="5">
-                                                <textarea cols="7" disabled class="textwrapper">{{ test.get("output", "no output")|safe }}</textarea>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-
-                                {% endfor %}
-                            </table>
-                    </div>
-
-                     <div class="eight-col no-border last-col no-margin-bottom">
-                        <div id="container" class="chart"><div>
-                        <script type="text/javascript">
-                            display_chart('{{ chart_data|safe }}')
-                        </script>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row no-border box">
-
-                <div class="twelve-col no-margin-bottom">
-                    <h3>Report history</h3>
-                    <table class="history">
-                        {% if history %}
-                            {% for provider, values in history.iteritems() %}
-                                <tr>
-                                    <td>{{ provider }}</td>
-                                    {% for value in values %}
-                                        {% for result in value['results'] %}
-                                            {% if result.get('provider_name') == provider %}
-                                                <td>{{ display_status_img(result["test_outcome"]) }}</td>
-                                            {% endif %}
-                                        {% endfor %}
-                                    {% endfor %}
-                                </tr>
-                            {% endfor %}
-                        {% endif %}
-                    </table>
-                </div>
-            </div>
-
+        </div>
+    </div>
 {% endblock %}
 

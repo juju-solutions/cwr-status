@@ -133,8 +133,8 @@ class TestImportDataDs(DatastoreTest):
         docs = list(self.ds.db.cwr.find())
         self.assertEqual(len(docs), 2)
         ids = [x['_id'] for x in docs]
-        self.assertItemsEqual(ids, ['cwr_cwr-test_1_1234-result-results.json',
-                                    'cwr_cwr-test_2_5679-result-results.json'])
+        self.assertItemsEqual(ids, ['cwr-test-1',
+                                    'cwr-test-2'])
         self.assertEqual(docs[0]['build_info'], make_build_info())
         self.assertEqual(docs[1]['build_info'], make_build_info())
         self.assertEqual(docs[0]['bundle_name'], "git")
@@ -146,7 +146,7 @@ class TestImportDataDs(DatastoreTest):
         build_info = make_build_info()
         test = {'date': '1'}
         job_name = 'cwr-test'
-        key = FakeKey(name='foo')
+        key = FakeKey(name='cwr/cwr-test/1/1234-result-results.json')
         doc = import_data.make_doc(build_info, test, job_name, key, None, None)
         self.ds.db.cwr.update(
             {'_id': import_data._get_id(key)}, doc, upsert=True)
@@ -154,6 +154,6 @@ class TestImportDataDs(DatastoreTest):
         self.assertFalse(needs_update)
 
     def test_doc_needs_update_returns_true(self):
-        key = FakeKey(name='foo')
+        key = FakeKey(name='cwr/cwr-test/1/1234-result-results.json')
         needs_update = import_data.doc_needs_update(key)
         self.assertTrue(needs_update)
