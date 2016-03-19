@@ -94,7 +94,7 @@ def bundles(page):
 
 @app.route('/import-data')
 def import_data():
-    from_s3(overwrite=True)
+    from_s3()
     return 'done.'
 
 

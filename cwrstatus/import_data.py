@@ -4,6 +4,7 @@ from cwrstatus.datastore import (
     Datastore,
     S3,
 )
+from cwrstatus.config import app
 
 
 def from_s3(overwrite=False):
@@ -12,7 +13,9 @@ def from_s3(overwrite=False):
     ds = Datastore()
     for key in s3.list(filter_fun=_filter_fun):
         if not overwrite and not doc_needs_update(key):
+            app.logger.debug('Skip importing {}'.format(key.name))
             continue
+        app.logger.info('Import new data from {}'.format(key.name))
         job_name = get_meta_data(key.name, 'job_name')
         build_number = get_meta_data(key.name, 'build_number')
         uploader_number = get_meta_data(key.name, 'uploader_build_number')
@@ -20,6 +23,10 @@ def from_s3(overwrite=False):
         artifacts = get_artifacts(build_info)
         test_result_path = get_test_path(
             artifacts, job_name, build_number, uploader_number)
+        if not test_result_path:
+            app.logger.error(
+                "Test result file not found for key: {} ".format(key.name))
+            continue
         svg_path = get_svg_path(
             artifacts, job_name, build_number, uploader_number)
         test_key = s3.get(test_result_path)
@@ -111,8 +118,7 @@ def get_test_path(artifacts, job_name, build_number, uploader_build_number):
     """
     file_path = [a for a in artifacts if a.endswith('result.json')]
     if len(file_path) != 1:
-        raise ValueError(
-            'Expecting a single test result but got {}'.format(len(file_path)))
+        return None
     return _make_path(
             job_name, build_number, uploader_build_number, file_path[0])
 

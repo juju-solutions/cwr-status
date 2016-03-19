@@ -112,8 +112,8 @@ class TestImportData(RequestTest):
 
     def test_get_test_path_on_exception(self):
         artifacts = ['test.svg', 'result.html']
-        with self.assertRaisesRegexp(ValueError, 'Expecting a single test'):
-            import_data.get_test_path(artifacts, 'cwr-test', '22', '12345')
+        tp = import_data.get_test_path(artifacts, 'cwr-test', '22', '12345')
+        self.assertIsNone(tp)
 
 
 class TestImportDataDs(DatastoreTest):
