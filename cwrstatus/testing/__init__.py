@@ -28,6 +28,7 @@ class RequestTest(TestCase):
         self.app.config.from_pyfile(
             os.path.join(os.path.dirname(os.path.dirname(__file__)),
                          'testing.cfg'))
+        self.app.logger.disabled = True
         self.context = self.app.test_request_context('/')
         self.context.push()
 
