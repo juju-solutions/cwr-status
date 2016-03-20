@@ -102,7 +102,7 @@
     <div>
         <h2 class="align-center"> {{ bundle_name }} </h2>
         <span>
-            Date: {{ results["date"]|humanize_date }}
+            Date: {{ results["date"] | replace('T', ' ')}}
         </span>
     </div>
 {% endblock %}
@@ -118,10 +118,12 @@
                 {% for result in results['results'] %}
                     {% set rowloop = loop %}
                     <tr onclick="toggle_rows('t{{ rowloop.index }}');" class="result">
-                        <td colspan="4" class="cloud-list">
+                        <td colspan="2" class="cloud-list">
                             <a href="javascript:;">{{ result["provider_name"] }}</a>
                         </td>
-                        <td class="cloud-list">
+                        <td colspan="2" class="cloud-list" id="total_time_{{ rowloop.index }}" >
+                        </td>
+                        <td class="cloud-list" >
                             <a href="javascript:;">
                                 {{  display_status_img(result.get("test_outcome")) }}
                             </a>
@@ -131,12 +133,22 @@
                         </td>
                     </tr>
 
+                    {%  set total_time = 0 %}
                     {% for test in result['tests'] %}
+
+                        {% set total_time = total_time + test.get('duration', 0)|float %}
+                        <script>
+                            $('#total_time_{{ rowloop.index }}').html({{ (total_time|float / 60) | round}} + ' min');
+                        </script>
+
                         <tr class="t{{ rowloop.index }} hide-it">
-                            <td colspan="4" class="" onclick="open_in_new_window('log-{{ rowloop.index }}{{ loop.index }}')">
+                            <td colspan="2" class="" onclick="open_in_new_window('log-{{ rowloop.index }}{{ loop.index }}')">
                                 <a href="javascript:;">
                                     {{ test["name"] }}
                                 </a>
+                            </td>
+                            <td colspan="2">
+                                {{ '%0.2f'% (test.get('duration', 0)|float / 60)}}
                             </td>
                             <td class="">
                                 {{ display_status_img(test["result"]) }}
