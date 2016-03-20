@@ -1,8 +1,13 @@
+from contextlib import contextmanager
 import json
+import os
+from shutil import rmtree
+from tempfile import mkdtemp
 
 from mock import patch
 from cwrstatus.datastore import (
     Datastore,
+    get_s3_access,
     S3,
 )
 from cwrstatus.testing import (
@@ -15,73 +20,73 @@ from cwrstatus.testing import (
 class TestDatastore(DatastoreTest):
 
     def test_get(self):
-        doc = self.make_doc()
-        self.update_data(doc)
+        doc = make_doc()
+        update_data(self.ds, doc)
         ds = Datastore()
         items = list(ds.get())
         self.assertEqual(items, [doc])
 
     def test_get_multiple(self):
-        doc = self.make_doc()
-        doc2 = self.make_doc(2)
-        self.update_data(doc)
-        self.update_data(doc2)
+        doc = make_doc()
+        doc2 = make_doc(2)
+        update_data(self.ds, doc)
+        update_data(self.ds, doc2)
         ds = Datastore()
         items = list(ds.get())
         self.assertEqual(items[0], doc2)
         self.assertEqual(items[1], doc)
 
     def test_get_filter(self):
-        doc = self.make_doc()
-        doc2 = self.make_doc(2)
-        self.update_data(doc)
-        self.update_data(doc2)
+        doc = make_doc()
+        doc2 = make_doc(2)
+        update_data(self.ds, doc)
+        update_data(self.ds, doc2)
         ds = Datastore()
         items = list(ds.get(filter={'_id': doc['_id']}))
         self.assertEqual(items, [doc])
 
     def test_get_limit(self):
-        doc = self.make_doc(1)
-        doc2 = self.make_doc(2)
-        doc3 = self.make_doc(3)
-        self.update_data(doc)
-        self.update_data(doc2)
-        self.update_data(doc3)
+        doc = make_doc(1)
+        doc2 = make_doc(2)
+        doc3 = make_doc(3)
+        update_data(self.ds, doc)
+        update_data(self.ds, doc2)
+        update_data(self.ds, doc3)
         ds = Datastore()
         items = list(ds.get(limit=2))
         self.assertEqual(items, [doc3, doc2])
 
     def test_get_skip(self):
-        doc = self.make_doc(1)
-        doc2 = self.make_doc(2)
-        doc3 = self.make_doc(3)
-        self.update_data(doc)
-        self.update_data(doc2)
-        self.update_data(doc3)
+        doc = make_doc(1)
+        doc2 = make_doc(2)
+        doc3 = make_doc(3)
+        update_data(self.ds, doc)
+        update_data(self.ds, doc2)
+        update_data(self.ds, doc3)
         ds = Datastore()
         items = list(ds.get(skip=1))
         self.assertEqual(items, [doc2, doc])
 
     def test_get_one(self):
-        doc = self.make_doc()
-        doc2 = self.make_doc(2)
-        self.update_data(doc)
-        self.update_data(doc2)
+        doc = make_doc()
+        doc2 = make_doc(2)
+        update_data(self.ds, doc)
+        update_data(self.ds, doc2)
         ds = Datastore()
         item = ds.get_one(filter={'_id': doc['_id']})
         self.assertEqual(item, doc)
 
     def test_get_by_bundle_name(self):
-        doc = self.make_doc(1)
-        doc2 = self.make_doc(2)
-        self.update_data(doc)
-        self.update_data(doc2)
+        doc = make_doc(1)
+        doc2 = make_doc(2)
+        update_data(self.ds, doc)
+        update_data(self.ds, doc2)
         ds = Datastore()
         items = list(ds.get_by_bundle_name(doc['bundle_name']))
         self.assertEqual(items, [doc])
 
     def test_update(self):
-        doc = self.make_doc()
+        doc = make_doc()
         ds = Datastore()
         with patch('cwrstatus.datastore.get_current_utc_time', autospec=True,
                    return_value=doc['_updated_on']) as gcut_mock:
@@ -91,7 +96,7 @@ class TestDatastore(DatastoreTest):
         gcut_mock.assert_called_once_with()
 
     def test_update_existing_doc(self):
-        doc = self.make_doc()
+        doc = make_doc()
         ds = Datastore()
         with patch('cwrstatus.datastore.get_current_utc_time', autospec=True,
                    return_value=doc['_updated_on']):
@@ -105,7 +110,7 @@ class TestDatastore(DatastoreTest):
             self.assertEqual(items, [doc])
 
     def test_update_and_get(self):
-        doc = self.make_doc()
+        doc = make_doc()
         ds = Datastore()
         with patch('cwrstatus.datastore.get_current_utc_time', autospec=True,
                    return_value=doc['_updated_on']) as gcut_mock:
@@ -115,14 +120,14 @@ class TestDatastore(DatastoreTest):
         gcut_mock.assert_called_once_with()
 
     def test_distinct(self):
-        doc = self.make_doc()
+        doc = make_doc()
         doc['bundle_name'] = 'foo'
-        self.update_data(doc)
-        doc = self.make_doc(2)
+        update_data(self.ds, doc)
+        doc = make_doc(2)
         doc['bundle_name'] = 'foo'
-        self.update_data(doc)
-        doc = self.make_doc(3)
-        self.update_data(doc)
+        update_data(self.ds, doc)
+        doc = make_doc(3)
+        update_data(self.ds, doc)
         ds = Datastore()
         distinct, count = ds.distinct()
         distinct = list(distinct)
@@ -131,19 +136,49 @@ class TestDatastore(DatastoreTest):
         self.assertItemsEqual(distinct, expected)
         self.assertEqual(count, 2)
 
-        doc = self.make_doc()
+    def test_get_s3_access(self):
+        with temp_dir() as home:
+            org_home = os.getenv('HOME')
+            os.environ['HOME'] = home
+            os.mkdir(os.path.join(home, 'cloud-city'))
+            cfg = os.path.join(home, 'cloud-city', 'juju-qa.s3cfg')
+            with open(cfg, 'w') as f:
+                f.write(s3cfg())
+                f.flush()
+            access_key, secret_key = get_s3_access()
+            os.environ['HOME'] = org_home
+            self.assertEqual(access_key, "fake_username")
+            self.assertEqual(secret_key, "fake_pass")
 
-    def update_data(self, doc):
-        self.ds.db.cwr.update({'_id': doc['_id']}, doc, upsert=True)
 
-    def make_doc(self, count=1):
-        count = str(count)
-        return {
-            'bundle_name': 'openstack' + count,
-            '_id': 'foo' + count,
-            '_updated_on': count,
-            'date': count
-        }
+@contextmanager
+def temp_dir(parent=None):
+    directory = mkdtemp(dir=parent)
+    try:
+        yield directory
+    finally:
+        rmtree(directory)
+
+
+def s3cfg():
+    return """[default]
+access_key = fake_username
+secret_key = fake_pass
+"""
+
+
+def make_doc(count=1):
+    count = str(count)
+    return {
+        'bundle_name': 'openstack' + count,
+        '_id': 'foo' + count,
+        '_updated_on': count,
+        'date': count
+    }
+
+
+def update_data(ds, doc):
+    ds.db.cwr.update({'_id': doc['_id']}, doc, upsert=True)
 
 
 class TestS3(TestCase):
