@@ -37,8 +37,9 @@ class Bundle:
                         except (KeyError, AttributeError):
                             raise Exception(
                                     'Non standardized benchmark format.')
-
-        print "value: ", values
+        # Latest data on right side of the graph
+        if values:
+            values.reverse()
         return values
 
     def test_result(self):
@@ -49,7 +50,7 @@ class Bundle:
 
         :rtype: dict
         """
-        past_results = self.get_past_tests()
+        past_results = list(self.get_past_tests())
         title = 'No data'
         series = []
         yaxis_tilte = ''
