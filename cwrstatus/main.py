@@ -59,8 +59,11 @@ def recent_by_bundle(bundle, page):
         pagination=pagination)
 
 
+@app.route('/bundle', defaults={'key': None})
 @app.route('/bundle/<key>')
-def bundle_view(key):
+def bundle_view(key=None):
+    if not key:
+        return render_template('404.html', e='Bundle not found.'), 404
     ds = Datastore()
     cwr_result = ds.get_one({'_id': key})
     if not cwr_result:
