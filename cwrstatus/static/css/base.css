@@ -24,6 +24,7 @@
     height: 12px;
     min-width: 12px;
     display: inline-block;
+    font-size: 18px;
 }
 
 .pass, .pass:before, .pass:after {
