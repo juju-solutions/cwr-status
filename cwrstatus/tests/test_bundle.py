@@ -53,7 +53,7 @@ class TestBundle(DatastoreTest):
         doc, doc2, doc3, doc4 = self.make_benchmarks()
         bundle = Bundle(doc3)
         chart = bundle.generate_chart_data()
-        expected = ('{"series": [{"data": [1, 2, 3], "name": "AWS"}], '
+        expected = ('{"series": [{"data": [1.0, 2.0, 3.0], "name": "AWS"}], '
                     '"yaxis_title": "secs", "title": "terasort"}')
         print chart
         self.assertEqual(chart, expected)
@@ -61,7 +61,7 @@ class TestBundle(DatastoreTest):
     def make_benchmarks(self):
         doc = make_doc()
         doc['bundle_name'] = 'foo'
-        results = self.make_results(1)
+        results = self.make_results(1.0)
         doc['test'] = {'results': results}
         update_data(self.ds, doc)
 
@@ -73,13 +73,13 @@ class TestBundle(DatastoreTest):
 
         doc3 = make_doc(count=3)
         doc3['bundle_name'] = 'foo'
-        results3 = self.make_results(3)
+        results3 = self.make_results(3.0)
         doc3['test'] = {'results': results3}
         update_data(self.ds, doc3)
 
         doc4 = make_doc(count=4)
         doc3['bundle_name'] = 'foo'
-        results4 = self.make_results(4)
+        results4 = self.make_results(4.0)
         doc4['test'] = {'results': results4}
         update_data(self.ds, doc4)
 

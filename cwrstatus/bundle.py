@@ -68,7 +68,7 @@ class Bundle:
             series.append(
                 {
                     'name': test_result.get('provider_name'),
-                    'data':  map(int, data) if data else []
+                    'data':  map(float, data) if data else []
                 }
             )
         chart = {
