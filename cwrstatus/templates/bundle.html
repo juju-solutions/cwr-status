@@ -104,6 +104,7 @@
         <div class="six-col box no-border">
             <table class="last-result">
 
+
                 {% for result in results['results'] %}
                     {% set rowloop = loop %}
                     <tr onclick="toggle_rows('t{{ rowloop.index }}');" class="result">
@@ -123,35 +124,52 @@
                     </tr>
 
                     {%  set total_time = 0 %}
-                    {% for test in result['tests'] %}
 
-                        {% set total_time = total_time + test.get('duration', 0)|float %}
-                        <script>
-                            $('#total_time_{{ rowloop.index }}').html({{ (total_time|float / 60) | round}} + ' min');
-                        </script>
 
-                        <tr class="t{{ rowloop.index }} hide-it">
-                            <td colspan="2" class="" onclick="open_in_new_window('log-{{ rowloop.index }}{{ loop.index }}')">
-                                <a href="javascript:;">
-                                    {{ test["name"] }}
-                                </a>
-                            </td>
-                            <td colspan="2">
-                                {{ '%0.2f'% (test.get('duration', 0)|float / 60)}}
-                            </td>
-                            <td class="">
-                                {{ display_status_img(test["result"]) }}
-                            </td>
-                        </tr>
-                        <tr class="output{{ rowloop.index }}{{ loop.index }} hide-it" id="log-{{ rowloop.index }}{{ loop.index }}">
-                            <td colspan="5">
-                                <textarea cols="7" disabled>
-                                    {{ test.get("output", "no output")|safe }}
-                                </textarea>
-                            </td>
-                        </tr>
+                    {% for group in result['tests']|groupby('suite') %}
+
+                        {%  if group.grouper %}
+                            <tr class="t{{ rowloop.index }} hide-it suite-title">
+                                <td colspan="5">
+                                    {{ group.grouper }}
+                                </td>
+                            <tr>
+                        {% endif %}
+
+                        {% for test in group.list %}
+
+                            {% set total_time = total_time + test.get('duration', 0)|float %}
+
+                            <script>
+                                $('#total_time_{{ rowloop.index }}').html({{ (total_time|float / 60) | round}} + ' min');
+                            </script>
+
+                            <tr class="t{{ rowloop.index }} hide-it">
+                                <td colspan="2" class="" onclick="open_in_new_window('log-{{ rowloop.index }}{{ loop.index }}')">
+                                    <a href="javascript:;">
+                                        {{ test["name"] }}
+                                    </a>
+                                </td>
+                                <td colspan="2">
+                                    {{ '%0.2f'% (test.get('duration', 0)|float / 60)}}
+                                </td>
+                                <td class="">
+                                    {{ display_status_img(test["result"]) }}
+                                </td>
+                            </tr>
+                            <tr class="output{{ rowloop.index }}{{ loop.index }} hide-it" id="log-{{ rowloop.index }}{{ loop.index }}">
+                                <td colspan="5">
+                                    <textarea cols="7" disabled>
+                                        {{ test.get("output", "no output")|safe }}
+                                    </textarea>
+                                </td>
+                            </tr>
+
+                        {% endfor %}
                     {% endfor %}
+
                 {% endfor %}
+
             </table>
         </div>
 
