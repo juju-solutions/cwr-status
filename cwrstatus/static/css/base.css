@@ -90,3 +90,9 @@
 .bundle-status {
     min-width: 150px;
 }
+
+.suite-title {
+    border-top: 1px solid #aaa;
+    border-bottom: 1px solid #aaa;
+    color:#888
+}
