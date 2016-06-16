@@ -123,8 +123,7 @@
                         </td>
                     </tr>
 
-                    {%  set total_time = 0 %}
-
+                    {% set total_time = [] %}
 
                     {% for group in result['tests']|groupby('suite') %}
 
@@ -138,10 +137,10 @@
 
                         {% for test in group.list %}
 
-                            {% set total_time = total_time + test.get('duration', 0)|float %}
+                            {% if total_time.append(test.get('duration', 0)|float ) %} {% endif %}
 
                             <script>
-                                $('#total_time_{{ rowloop.index }}').html({{ (total_time|float / 60) | round}} + ' min');
+                                $('#total_time_{{ rowloop.index }}').html({{ (total_time|sum|float / 60) | round}} + ' min');
                             </script>
 
                             <tr class="t{{ rowloop.index }} hide-it">
