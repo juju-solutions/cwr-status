@@ -5,6 +5,7 @@ from cwrstatus.datastore import (
     S3,
 )
 from cwrstatus.config import app
+import utils
 
 
 def from_s3(overwrite=False):
@@ -103,6 +104,7 @@ def make_doc(build_info, test, job_name, key, artifacts, svg_path):
     doc['artifacts'] = artifacts
     doc['svg_path'] = svg_path
     doc['etag'] = key.etag
+    doc['test_id'] = test.get('test_id', utils.generate_test_id())
     return doc
 
 

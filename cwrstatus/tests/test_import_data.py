@@ -80,7 +80,7 @@ class TestImportData(RequestTest):
 
     def test_make_doc(self):
         build_info = make_build_info()
-        test = {'date': '1'}
+        test = {'date': '1', 'test_id': '1234'}
         job_name = 'cwr-test'
         artifacts = ['foo', 'bar']
         svg_path = 'path/to/svg'
@@ -101,6 +101,7 @@ class TestImportData(RequestTest):
             'etag': key.etag,
             'artifacts': artifacts,
             'svg_path': 'path/to/svg',
+            'test_id': '1234',
         }
         self.assertEqual(doc, expected)
 
