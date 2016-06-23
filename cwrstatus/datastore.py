@@ -16,7 +16,8 @@ class Datastore:
         self.collection = ds.db[collection]
         self.limit = limit
 
-    def get(self, filter=None, limit=None, skip=0, latest_first=True):
+    def get(self, filter=None, limit=None, skip=0, latest_first=True,
+            sort_field='date'):
         """ Return documents from the collection.
 
         :param filter: dict specifying the filter elements.
@@ -26,7 +27,9 @@ class Datastore:
         :rtype: pymongo.cursor.Cursor
         """
         limit = limit or self.limit
-        sort = [('date', pymongo.DESCENDING)] if latest_first else None
+        sort = [(sort_field, pymongo.ASCENDING)]
+        if latest_first:
+            sort = [(sort_field, pymongo.DESCENDING)]
         return self.collection.find(
             filter=filter, limit=limit, skip=skip, sort=sort)
 
@@ -70,6 +73,32 @@ class Datastore:
              {'$skip': skip},
              {'$limit': limit},
              {"$sort": {"_id": 1}}]), count
+
+    def get_test_ids(self, key='test_id', limit=None, skip=0,
+                     latest_first=True, bundle=None):
+        limit = limit or self.limit
+        if bundle is not None:
+            distinct_test_id = self.collection.aggregate([
+                {"$match": {"bundle_name": bundle}},
+                {'$group': {
+                    '_id': '${}'.format(key),
+                    'date': {"$first": "$date"},
+                }},
+                {"$sort": {"date": pymongo.DESCENDING}},
+                {'$skip': skip},
+                {'$limit': limit},
+            ])
+        else:
+            distinct_test_id = self.collection.aggregate([
+                {'$group': {
+                    '_id': '${}'.format(key),
+                    'date': {"$first": "$date"},
+                }},
+                {"$sort": {"date": pymongo.DESCENDING}},
+                {'$skip': skip},
+                {'$limit': limit},
+            ])
+        return distinct_test_id
 
 
 class S3:

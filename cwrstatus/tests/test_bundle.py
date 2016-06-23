@@ -25,6 +25,7 @@ class TestBundle(DatastoreTest):
         doc = make_doc()
         doc['test'] = 'foo'
         bundle = Bundle(bundle=doc)
+        bundle.add_test_result(doc)
         test = bundle.test_result()
         self.assertEqual(test, doc['test'])
 
@@ -52,6 +53,7 @@ class TestBundle(DatastoreTest):
     def test_generate_chart_data(self):
         doc, doc2, doc3, doc4 = self.make_benchmarks()
         bundle = Bundle(doc3)
+        bundle.add_test_result(doc3)
         chart = bundle.generate_chart_data()
         expected = ('{"series": [{"data": [1.0, 2.0, 3.0], "name": "AWS"}], '
                     '"yaxis_title": "secs", "title": "terasort"}')

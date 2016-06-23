@@ -109,7 +109,7 @@
                     {% set rowloop = loop %}
                     <tr onclick="toggle_rows('t{{ rowloop.index }}');" class="result">
                         <td colspan="2" class="cloud-list">
-                            <a href="javascript:;">{{ result["provider_name"] }}</a>
+                            <a href="javascript:;" title="{{ result['build_id'] }}">{{ result["provider_name"] }}</a>
                         </td>
                         <td colspan="2" class="cloud-list" id="total_time_{{ rowloop.index }}" >
                         </td>
