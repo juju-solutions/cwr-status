@@ -136,6 +136,37 @@ class TestDatastore(DatastoreTest):
         self.assertItemsEqual(distinct, expected)
         self.assertEqual(count, 2)
 
+    def test_get_test_ids(self):
+        doc = make_doc()
+        doc['bundle_name'] = 'foo'
+        update_data(self.ds, doc)
+        doc = make_doc(2)
+        doc['bundle_name'] = 'foo'
+        update_data(self.ds, doc)
+        doc = make_doc(3, test_id="44")
+        update_data(self.ds, doc)
+        ds = Datastore()
+        distinct = ds.get_test_ids()
+        distinct = list(distinct)
+        expected = [{'date': '3', '_id': '44'},
+                    {'date': '1', '_id': '33'}]
+        self.assertEqual(distinct, expected)
+
+    def test_get_test_ids_by_bundle(self):
+        doc = make_doc()
+        doc['bundle_name'] = 'foo'
+        update_data(self.ds, doc)
+        doc = make_doc(2)
+        doc['bundle_name'] = 'foo'
+        update_data(self.ds, doc)
+        doc = make_doc(3, test_id="44")
+        update_data(self.ds, doc)
+        ds = Datastore()
+        distinct = ds.get_test_ids(bundle='foo')
+        distinct = list(distinct)
+        expected = [{'date': '1', '_id': '33'}]
+        self.assertEqual(distinct, expected)
+
     def test_get_s3_access(self):
         with temp_dir() as home:
             org_home = os.getenv('HOME')
@@ -167,13 +198,14 @@ secret_key = fake_pass
 """
 
 
-def make_doc(count=1):
+def make_doc(count=1, test_id="33"):
     count = str(count)
     return {
         'bundle_name': 'openstack' + count,
         '_id': 'foo' + count,
         '_updated_on': count,
-        'date': count
+        'date': count,
+        'test_id': test_id,
     }
 
 

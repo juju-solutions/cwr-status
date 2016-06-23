@@ -28,32 +28,26 @@ def index():
 @app.route('/recent', defaults={'page': 1})
 @app.route('/recent/page/<int:page>')
 def recent(page):
-    ds = Datastore()
-    limit = PAGE_LIMIT
-    skip = limit * (abs(page) - 1)
-    cwr_results = ds.get(limit=limit, skip=skip)
-    bundle_title = 'Recent tests'
-    pagination = Pagination(
-        page=page, total_count=cwr_results.count(), limit_per_page=limit,
-        request=request)
-    print cwr_results.count(), limit
-    return render_template(
-        'recent.html', cwr_results=cwr_results, bundle_title=bundle_title,
-        pagination=pagination)
+    return get_recent_bundles(page)
 
 
 @app.route('/recent/<bundle>', defaults={'page': 1})
 @app.route('/recent/<bundle>/page/<int:page>')
 def recent_by_bundle(bundle, page):
+    return get_recent_bundles(page, bundle=bundle)
+
+
+def get_recent_bundles(page, bundle=None):
     ds = Datastore()
-    filter = {'bundle_name': bundle}
     limit = PAGE_LIMIT
     skip = limit * (abs(page) - 1)
-    cwr_results = ds.get(filter=filter, limit=limit, skip=skip)
+    test_ids = ds.get_test_ids(bundle=bundle, limit=limit, skip=skip)
+    bundle_title = 'Recent tests'
+    cwr_results = get_results_by_test_ids(test_ids)
+    total_count = 0 if len(cwr_results) < limit else 999
     pagination = Pagination(
-            page=page, total_count=cwr_results.count(), limit_per_page=limit,
-            request=request)
-    bundle_title = 'Recent tests: {}'.format(bundle)
+        page=page, total_count=total_count, limit_per_page=limit,
+        request=request)
     return render_template(
         'recent.html', cwr_results=cwr_results, bundle_title=bundle_title,
         pagination=pagination)
@@ -64,11 +58,14 @@ def recent_by_bundle(bundle, page):
 def bundle_view(key=None):
     if not key:
         return render_template('404.html', e='Bundle not found.'), 404
-    ds = Datastore()
-    cwr_result = ds.get_one({'_id': key})
+    test_id = {}
+    test_id['_id'] = key
+    cwr_result = get_results_by_test_id(test_id)
     if not cwr_result:
         return render_template('404.html', e='Bundle not found.'), 404
-    bundle = Bundle(cwr_result)
+    bundle = Bundle(cwr_result[0])
+    for result in cwr_result:
+        bundle.add_test_result(result)
     svg_path = bundle.svg_path()
     bundle_name = bundle.name
     results = bundle.test_result()
@@ -77,6 +74,25 @@ def bundle_view(key=None):
     return render_template(
         'bundle.html', bundle_name=bundle_name, results=results,
         svg_path=svg_path, history=history, chart_data=chart_data)
+
+
+def get_results_by_test_id(test_id, ds=None):
+    ds = ds or Datastore()
+    group_test = []
+    tests = ds.get({'test_id': test_id['_id']}, latest_first=False,
+                   sort_field='controllers')
+    for test in tests:
+        group_test.append(test)
+    return group_test
+
+
+def get_results_by_test_ids(test_ids, ds=None):
+    ds = ds or Datastore()
+    cwr_results = []
+    for test_id in test_ids:
+        group_test = get_results_by_test_id(test_id, ds)
+        cwr_results.append(group_test)
+    return cwr_results
 
 
 @app.route('/bundles', defaults={'page': 1})

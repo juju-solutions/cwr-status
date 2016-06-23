@@ -12,7 +12,7 @@ class Bundle:
         self.bundle = bundle
         self.name = bundle.get('bundle_name')
         self.build_info = bundle.get('build_info')
-        self.test = bundle.get('test') or {}
+        self.test = None
         self.ds = Datastore()
 
     def get_past_tests(self):
@@ -41,6 +41,15 @@ class Bundle:
         if values:
             values.reverse()
         return values
+
+    def add_test_result(self, result):
+        if result.get('test') and result.get('test').get('results'):
+            for x in result['test']['results']:
+                x['build_id'] = result["_id"]
+        if not self.test and result.get('test'):
+            self.test = result.get('test')
+        elif result.get('test') and result.get('test').get('results'):
+            self.test['results'].extend(result['test']['results'])
 
     def test_result(self):
         return self.test

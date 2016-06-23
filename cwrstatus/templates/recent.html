@@ -25,31 +25,37 @@
             </tr>
             </thead>
 
-            {% for cwr_result in cwr_results %}
+            {% for grouped_tests in cwr_results %}
                 <tr>
                     <td></td>
                     <td class="bundle-status">
-                            {{ cwr_result['bundle_name'] }}
+                        {{ grouped_tests[0]['bundle_name'] }}
                     </td>
                     <td>
-                        <a href="{{ url_for('bundle_view', key=cwr_result['_id']) }}">
-                            {{ cwr_result['test']['date'] | humanize_date }}
+                        <a href="{{ url_for('bundle_view', key=grouped_tests[0]['test_id']) }}">
+                            {{ grouped_tests[0]['test']['date'] | humanize_date }}
                         </a>
                     </td>
 
-                    <td class="bundle-status" onclick="window.location('{{ url_for('bundle_view', key=cwr_result['_id']) }}')">
+                    <td class="bundle-status">
 
-                        {% for outcome in cwr_result['test']['results'] %}
-                            <table class="outcome" onclick="window.location='{{ url_for('bundle_view', key=cwr_result['_id']) }}'">
-                                <tr>
-                                    <td>
-                                        {{ outcome.get("provider_name") }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>{{ display_status_img(outcome.get("test_outcome")) }}</td>
-                                </tr>
-                            </table>
+                        {% for tests in grouped_tests %}
+
+                            {% for outcome in tests['test']['results'] %}
+
+                                <table class="outcome" onclick="window.location='{{ url_for('bundle_view', key=grouped_tests[0]['test_id']) }}'">
+                                    <tr>
+                                        <td>
+                                            {{ outcome.get("provider_name") }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{ display_status_img(outcome.get("test_outcome")) }}</td>
+                                    </tr>
+                                </table>
+
+                            {% endfor %}
+
                         {% endfor %}
 
                     </td>
