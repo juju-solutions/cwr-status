@@ -7,9 +7,8 @@
 {% block head %}
 
         <script type='text/javascript' src='/static/js/jquery.min.js'></script>
-        <script type='text/javascript' src='/static/js/highcharts.js'></script>
 
-        <script type="text/javascript">
+    <script type='text/javascript'>
         function hide_rows(name) {
             name = '.' + name;
             $(name).hide();
@@ -19,55 +18,6 @@
             name = '.' + name;
             $(name).toggle();
             return false;
-        }
-        function display_chart(chart_data) {
-            chart_data = JSON.parse(chart_data);
-            h_charts = {
-                chart: {
-                    renderTo: 'containter',
-                    borderLeftWidth: 1,
-                    borderColor: '#eee',
-                    backgroundColor: null,
-                    color: '#333',
-                    style: {
-                        fontFamily: 'Ubuntu, Arial, "libra sans", sans-serif;'
-                    }
-                },
-
-                title: {
-                    text: 'Benchmark Results'
-                },
-                subtitle: {
-                    text: chart_data['title']
-                },
-                xAxis: {
-                    categories: []
-                },
-                yAxis: {
-                    title: {
-                        text: chart_data['yaxis_title']
-                    },
-                    plotLines: [{
-                        value: 0,
-                        width: 1,
-                        color: '#808080'
-                    }]
-                },
-                tooltip: {
-                    valueSuffix: chart_data['yaxis_title']
-                },
-                legend: {
-                    layout: 'vertical',
-                    align: 'right',
-                    verticalAlign: 'middle',
-                    borderWidth: 0
-                },
-                credits: {
-                    enabled: false
-                },
-                series: chart_data['series']
-            };
-            $('#chart-container').highcharts(h_charts);
         }
         function open_in_new_window(id_name) {
             var w = window.open();
@@ -187,9 +137,6 @@
         <div class="twelve-col">
             <div id="chart-container" class="chart">
                 <div>
-                    <script type="text/javascript">
-                        display_chart('{{ chart_data|safe }}')
-                    </script>
                 </div>
             </div>
         </div>
