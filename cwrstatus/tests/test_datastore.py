@@ -167,6 +167,28 @@ class TestDatastore(DatastoreTest):
         expected = [{'date': '1', '_id': '33'}]
         self.assertEqual(distinct, expected)
 
+    def test_get_test_ids_by_date(self):
+        doc = make_doc()
+        doc['bundle_name'] = 'foo'
+        doc['date'] = "1"
+        update_data(self.ds, doc)
+
+        doc = make_doc(2)
+        doc['bundle_name'] = 'foo'
+        doc['date'] = "2"
+        update_data(self.ds, doc)
+
+        doc = make_doc(3, test_id="44")
+        doc['bundle_name'] = 'foo'
+        doc['date'] = "3"
+        update_data(self.ds, doc)
+
+        ds = Datastore()
+        test_ids = ds.get_test_ids(bundle='foo', date="2")
+        test_ids = list(test_ids)
+        expected = [{'date': '1', '_id': '33'}]
+        self.assertEqual(test_ids, expected)
+
     def test_get_s3_access(self):
         with temp_dir() as home:
             org_home = os.getenv('HOME')
@@ -180,6 +202,27 @@ class TestDatastore(DatastoreTest):
             os.environ['HOME'] = org_home
             self.assertEqual(access_key, "fake_username")
             self.assertEqual(secret_key, "fake_pass")
+
+    def test_generate_match_filter(self):
+        match = Datastore._generate_match_filter()
+        self.assertEqual(match, {})
+
+        match = Datastore._generate_match_filter(bundle='foo')
+        expected = {"bundle_name": 'foo'}
+        self.assertEqual(match, expected)
+
+        match = Datastore._generate_match_filter(date='bar')
+        expected = {"date": {"$lte": 'bar'}}
+        self.assertEqual(match, expected)
+
+        match = Datastore._generate_match_filter(bundle='foo', date='bar')
+        expected = {
+            "$and": [
+                {"bundle_name": 'foo'},
+                {"date": {"$lte": 'bar'}}
+            ]
+        }
+        self.assertEqual(match, expected)
 
 
 @contextmanager

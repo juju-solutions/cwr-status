@@ -75,16 +75,20 @@ class Datastore:
              {"$sort": {"_id": 1}}]), count
 
     def get_test_ids(self, key='test_id', limit=None, skip=0,
-                     latest_first=True, bundle=None):
+                     latest_first=True, bundle=None, date=None):
         limit = limit or self.limit
-        if bundle is not None:
+        sort_order = pymongo.DESCENDING
+        if latest_first is False:
+            sort_order = pymongo.ASCENDING
+        match = self._generate_match_filter(bundle, date)
+        if match is not None:
             distinct_test_id = self.collection.aggregate([
-                {"$match": {"bundle_name": bundle}},
+                {"$match": match},
                 {'$group': {
                     '_id': '${}'.format(key),
                     'date': {"$first": "$date"},
                 }},
-                {"$sort": {"date": pymongo.DESCENDING}},
+                {"$sort": {"date": sort_order}},
                 {'$skip': skip},
                 {'$limit': limit},
             ])
@@ -94,11 +98,27 @@ class Datastore:
                     '_id': '${}'.format(key),
                     'date': {"$first": "$date"},
                 }},
-                {"$sort": {"date": pymongo.DESCENDING}},
+                {"$sort": {"date": sort_order}},
                 {'$skip': skip},
                 {'$limit': limit},
             ])
         return distinct_test_id
+
+    @staticmethod
+    def _generate_match_filter(bundle=None, date=None):
+        match = {}
+        if bundle is not None and date is not None:
+            match = {
+                "$and": [
+                    {"bundle_name": bundle},
+                    {"date": {"$lte": date}}
+                ]
+            }
+        elif bundle is not None:
+            match = {"bundle_name": bundle}
+        elif date is not None:
+            match = {"date": {"$lte": date}}
+        return match
 
 
 class S3:
