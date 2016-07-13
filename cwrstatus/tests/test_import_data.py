@@ -84,9 +84,12 @@ class TestImportData(RequestTest):
         job_name = 'cwr-test'
         artifacts = ['foo', 'bar']
         svg_path = 'path/to/svg'
+        html_path = 'example.com/html'
+        json_path = 'exaple.com/json'
         key = FakeKey(name='foo')
         doc = import_data.make_doc(
-            build_info, test, job_name, key, artifacts, svg_path)
+            build_info, test, job_name, key, artifacts, svg_path, html_path,
+            json_path)
         expected = {
             'bundle_name': 'git',
             'test_plan': 'git.yaml',
@@ -102,6 +105,8 @@ class TestImportData(RequestTest):
             'artifacts': artifacts,
             'svg_path': 'path/to/svg',
             'test_id': '1234',
+            'html_path': html_path,
+            'json_path': json_path,
         }
         self.assertEqual(doc, expected)
 
@@ -148,7 +153,8 @@ class TestImportDataDs(DatastoreTest):
         test = {'date': '1'}
         job_name = 'cwr-test'
         key = FakeKey(name='cwr/cwr-test/1/1234-result-results.json')
-        doc = import_data.make_doc(build_info, test, job_name, key, None, None)
+        doc = import_data.make_doc(build_info, test, job_name, key, None, None,
+                                   None, None)
         self.ds.db.cwr.update(
             {'_id': import_data._get_id(key)}, doc, upsert=True)
         needs_update = import_data.doc_needs_update(key)

@@ -32,7 +32,7 @@
                         {{ grouped_tests[0]['bundle_name'] }}
                     </td>
                     <td>
-                        <a href="{{ url_for('bundle_view', key=grouped_tests[0]['test_id']) }}">
+                        <a href="{{ url_for('result_by_test_id', key=grouped_tests[0]['test_id']) }}">
                             {{ grouped_tests[0]['test']['date'] | humanize_date }}
                         </a>
                     </td>
@@ -43,7 +43,7 @@
 
                             {% for outcome in tests['test']['results'] %}
 
-                                <table class="outcome" onclick="window.location='{{ url_for('bundle_view', key=grouped_tests[0]['test_id']) }}'">
+                                <table class="outcome" onclick="window.location='{{ url_for('result_by_test_id', key=grouped_tests[0]['test_id']) }}'">
                                     <tr>
                                         <td>
                                             {{ outcome.get("provider_name") }}
