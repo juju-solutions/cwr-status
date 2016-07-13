@@ -1,4 +1,5 @@
 import copy
+import json
 
 from cwrstatus.bundle import Bundle
 from cwrstatus.testing import DatastoreTest
@@ -23,8 +24,9 @@ class TestBundle(DatastoreTest):
 
     def test_result(self):
         doc = make_doc()
-        doc['test'] = 'foo'
         bundle = Bundle(bundle=doc)
+        results = self.make_results(1)
+        doc['test'] = {'results': results}
         bundle.add_test_result(doc)
         test = bundle.test_result()
         self.assertEqual(test, doc['test'])
@@ -48,17 +50,77 @@ class TestBundle(DatastoreTest):
         past_tests = list(bundle.get_past_tests())
         past_ben = bundle.get_past_benchmarks(
             provider_name='AWS', past_results=past_tests)
-        self.assertEqual(past_ben, [1, 2])
+        self.assertEqual(past_ben, [1])
 
     def test_generate_chart_data(self):
         doc, doc2, doc3, doc4 = self.make_benchmarks()
         bundle = Bundle(doc3)
-        bundle.add_test_result(doc3)
         chart = bundle.generate_chart_data()
-        expected = ('{"series": [{"data": [1.0, 2.0, 3.0], "name": "AWS"}], '
-                    '"yaxis_title": "secs", "title": "terasort"}')
-        print chart
+        expected = json.dumps(
+            {
+                "labels": ["33", "44"],
+                "datasets": [
+                    {
+                        "borderColor": "#4B98D9",
+                        "lineTension": 0.1,
+                        "label": "AWS (2.00)",
+                        "borderWidth": 2,
+                        "backgroundColor": "#4B98D9",
+                        "data": [1.0, 3.0],
+                        "fill": False,
+                    },
+                    {
+                        "borderColor": "#56CE65",
+                        "lineTension": 0.1,
+                        "label": "Azure (2.00)",
+                        "borderWidth": 2,
+                        "backgroundColor": "#56CE65",
+                        "data": [2, None],
+                        "fill": False,
+                    }
+                ],
+                "title": "Terasort Benchmark Chart"
+            })
         self.assertEqual(chart, expected)
+
+    def test_create_intial_datasets(self):
+        provider_names = ['AWS', "GCE"]
+        datasets = Bundle._create_initial_datasets(provider_names)
+        expected = [
+            {
+                'borderColor': '#4B98D9',
+                'lineTension': 0.1,
+                'label': 'AWS',
+                'borderWidth': 2,
+                'backgroundColor': '#4B98D9',
+                'data': [],
+                'fill': False
+            },
+            {
+                'borderColor': '#56CE65',
+                'lineTension': 0.1,
+                'label': 'GCE',
+                'borderWidth': 2,
+                'backgroundColor': '#56CE65',
+                'data': [],
+                'fill': False
+             }]
+        self.assertEqual(datasets, expected)
+
+    def test_get_dataset(self):
+        provider_names = ['AWS', "GCE"]
+        datasets = Bundle._create_initial_datasets(provider_names)
+        dataset = Bundle._get_dataset(datasets, 'AWS')
+        expected = {
+            'borderColor': '#4B98D9',
+            'lineTension': 0.1,
+            'label': 'AWS',
+            'borderWidth': 2,
+            'backgroundColor': '#4B98D9',
+            'data': [],
+            'fill': False
+        }
+        self.assertEqual(dataset, expected)
 
     def make_benchmarks(self):
         doc = make_doc()
@@ -69,17 +131,17 @@ class TestBundle(DatastoreTest):
 
         doc2 = make_doc(count=2)
         doc2['bundle_name'] = 'foo'
-        results2 = self.make_results(2)
+        results2 = self.make_results(2, provider_name='Azure')
         doc2['test'] = {'results': results2}
         update_data(self.ds, doc2)
 
-        doc3 = make_doc(count=3)
+        doc3 = make_doc(count=3, test_id='44')
         doc3['bundle_name'] = 'foo'
         results3 = self.make_results(3.0)
         doc3['test'] = {'results': results3}
         update_data(self.ds, doc3)
 
-        doc4 = make_doc(count=4)
+        doc4 = make_doc(count=4, test_id='44')
         doc3['bundle_name'] = 'foo'
         results4 = self.make_results(4.0)
         doc4['test'] = {'results': results4}
@@ -87,7 +149,7 @@ class TestBundle(DatastoreTest):
 
         return doc, doc2, doc3, doc4
 
-    def make_results(self, value):
+    def make_results(self, value, provider_name='AWS'):
         benchmark = [
             {
                 "terasort": {
@@ -101,7 +163,7 @@ class TestBundle(DatastoreTest):
             }
         ]
         results = [{
-            'provider_name': 'AWS',
+            'provider_name': provider_name,
             'benchmarks': benchmark
         }]
         return results
