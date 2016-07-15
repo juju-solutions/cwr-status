@@ -2,6 +2,7 @@ from datetime import datetime
 import os
 
 from flask import (
+    jsonify,
     redirect,
     render_template,
     request,
@@ -18,11 +19,17 @@ from cwrstatus.config import (
 from cwrstatus.datastore import Datastore
 from cwrstatus.pagination import Pagination
 from cwrstatus.import_data import from_s3
+from cwrstatus.utils import generate_json_results
 
 
 @app.route('/')
 def index():
     return redirect(url_for('recent'))
+
+
+@app.route('/.json')
+def index_json():
+    return redirect(url_for('recent_json'))
 
 
 @app.route('/recent', defaults={'page': 1})
@@ -31,19 +38,34 @@ def recent(page):
     return get_recent_bundles(page)
 
 
+@app.route('/recent.json', defaults={'page': 1})
+@app.route('/recent.json/page/<int:page>')
+def recent_json(page):
+    limit = PAGE_LIMIT
+    bundles = get_recent_test_result(page, limit)
+    results = generate_json_results(bundles)
+    return jsonify(results)
+
+
 @app.route('/recent/<bundle>', defaults={'page': 1})
 @app.route('/recent/<bundle>/page/<int:page>')
 def recent_by_bundle(bundle, page):
     return get_recent_bundles(page, bundle=bundle)
 
 
-def get_recent_bundles(page, bundle=None):
-    ds = Datastore()
+@app.route('/recent/<bundle>.json', defaults={'page': 1})
+@app.route('/recent/<bundle>.json/page/<int:page>')
+def recent_test_result_by_bundle_json(bundle, page):
     limit = PAGE_LIMIT
-    skip = limit * (abs(page) - 1)
-    test_ids = ds.get_test_ids(bundle=bundle, limit=limit, skip=skip)
+    bundles = get_recent_test_result(page, limit, bundle=bundle)
+    results = generate_json_results(bundles)
+    return jsonify(results)
+
+
+def get_recent_bundles(page, bundle=None):
+    limit = PAGE_LIMIT
+    cwr_results = get_recent_test_result(page, limit, bundle)
     bundle_title = 'Recent tests'
-    cwr_results = get_results_by_test_ids(test_ids)
     total_count = 0 if len(cwr_results) < limit else 999
     pagination = Pagination(
         page=page, total_count=total_count, limit_per_page=limit,
@@ -53,9 +75,19 @@ def get_recent_bundles(page, bundle=None):
         pagination=pagination)
 
 
+def get_recent_test_result(page, limit, bundle=None):
+    ds = Datastore()
+    skip = limit * (abs(page) - 1)
+    test_ids = ds.get_test_ids(bundle=bundle, limit=limit, skip=skip)
+    cwr_results = get_results_by_test_ids(test_ids)
+    return cwr_results
+
+
 @app.route('/bundle', defaults={'key': None})
 @app.route('/bundle/<key>')
-def bundle_view(key=None):
+@app.route('/test', defaults={'key': None})
+@app.route('/test/<key>')
+def result_by_test_id(key=None):
     if not key:
         return render_template('404.html', e='Bundle not found.'), 404
     test_id = {}
@@ -74,6 +106,14 @@ def bundle_view(key=None):
     return render_template(
         'bundle.html', bundle_name=bundle_name, results=results,
         svg_path=svg_path, history=history, chart_data=chart_data)
+
+
+@app.route('/test/<test_id>.json')
+def result_by_test_id_json(test_id=None):
+    test_id = {'_id': test_id}
+    results = get_results_by_test_id(test_id)
+    results = generate_json_results([results])
+    return jsonify(results)
 
 
 def get_results_by_test_id(test_id, ds=None):
@@ -126,7 +166,7 @@ def humanize_date_filter(value, time_format=None):
 
 @app.errorhandler(404)
 def page_not_found(e):
-    render_template('404.html', e='Page not found'), 404
+    return render_template('404.html', e='Page not found'), 404
 
 
 @app.route('/favicon.ico')

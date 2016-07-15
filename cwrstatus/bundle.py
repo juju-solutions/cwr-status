@@ -1,4 +1,5 @@
 import json
+from math import sqrt
 
 from cwrstatus.datastore import Datastore
 
@@ -58,8 +59,17 @@ class Bundle:
     def calculate_avg_benchmark(datasets):
         for dataset in datasets:
             data = [float(x) for x in dataset['data'] if x]
+            if not data:
+                dataset['label'] = '{} '.format(dataset['label'])
+                continue
             avg = sum(data) / float(len(data))
-            dataset['label'] = '{} ({:.2f})'.format(dataset['label'], avg)
+            differences = [x - avg for x in data]
+            sq_diff = [d ** 2 for d in differences]
+            ssd = sum(sq_diff)
+            variance = ssd / len(data)
+            standard_deviation = sqrt(variance)
+            dataset['label'] = '{} ({:.2f} avg  {:.2f} sd)'.format(
+                dataset['label'], avg, standard_deviation)
 
     def generate_chart_data(self):
         ds = Datastore()
@@ -70,33 +80,44 @@ class Bundle:
         provider_names = self.get_provider_names(test_ids)
         datasets = self._create_initial_datasets(provider_names)
         title = None
-        benchmark_data_available = False
+        units = None
+        direction = None
         for test_id in test_ids:
             tests = ds.get({'test_id': test_id['_id']})
-            for provider_name in provider_names:
-                data = self._get_dataset(datasets, provider_name)
-                data['data'].append(None)
-            for test in tests:
-                test = test.get('test') or {}
-                for result in test.get('results', []):
-                    provider_name = result.get('provider_name')
-                    data = self._get_dataset(datasets, provider_name)
-                    benchmarks = result.get('benchmarks')
-                    if not benchmarks:
-                        continue
-                    data['data'][-1] = benchmarks[0].values()[0]['value']
-                    title = benchmarks[0].keys()[0]
-                    benchmark_data_available = True
-        if not benchmark_data_available:
+            title, units, direction = self._generate_datasets(
+                datasets, tests, provider_names)
+        if not title:
             return None
         self.calculate_avg_benchmark(datasets)
-        title = "{} Benchmark Chart".format(title.title())
+        title = "{} Benchmark Chart  (Units: {}  Direction: {})".format(
+            title.title(), units, direction)
         chart_data = {
             'labels': [x['_id'][-5:] for x in test_ids],
             'datasets': datasets,
             'title': title,
         }
         return json.dumps(chart_data)
+
+    def _generate_datasets(self, datasets, tests, provider_names):
+        title = None
+        units = None
+        direction = None
+        for provider_name in provider_names:
+            data = self._get_dataset(datasets, provider_name)
+            data['data'].append(None)
+        for test in tests:
+            test = test.get('test') or {}
+            for result in test.get('results', []):
+                provider_name = result.get('provider_name')
+                data = self._get_dataset(datasets, provider_name)
+                benchmarks = result.get('benchmarks')
+                if not benchmarks:
+                    continue
+                data['data'][-1] = benchmarks[0].values()[0]['value']
+                title = benchmarks[0].keys()[0]
+                units = benchmarks[0][title].get('units', '')
+                direction = benchmarks[0][title].get('direction', '')
+        return title, units, direction
 
     @staticmethod
     def _create_initial_datasets(provider_names):

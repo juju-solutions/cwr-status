@@ -28,11 +28,16 @@ def from_s3(overwrite=False):
             app.logger.error(
                 "Test result file not found for key: {} ".format(key.name))
             continue
-        svg_path = get_svg_path(
-            artifacts, job_name, build_number, uploader_number)
+        svg_path = make_path(
+            artifacts, job_name, build_number, uploader_number, "result.svg")
+        html_path = make_path(
+            artifacts, job_name, build_number, uploader_number, "result.html")
+        json_path = make_path(
+            artifacts, job_name, build_number, uploader_number, "result.json")
         test_key = s3.get(test_result_path)
         test = json.loads(test_key.get_contents_as_string())
-        doc = make_doc(build_info, test, job_name, key, artifacts, svg_path)
+        doc = make_doc(build_info, test, job_name, key, artifacts, svg_path,
+                       html_path, json_path)
         ds.update({'_id': _get_id(key)}, doc)
 
 
@@ -87,13 +92,18 @@ def _filter_fun(value):
     return value.endswith('result-results.json')
 
 
-def make_doc(build_info, test, job_name, key, artifacts, svg_path):
+def make_doc(build_info, test, job_name, key, artifacts, svg_path, html_path,
+             json_path):
     """Create doc that will be inserted into the database.
 
     :param build_info: Jenkins build info
     :param test: Test result
     :param job_name: Jenkins job name
     :param key:  S3 object key
+    :param artifacts: Jenkins artifacts.
+    :param svg_path: URL to the bundle's svg image.
+    :param html_path: URL to the test result in html format.
+    :param json_path: URL to the test result in json format.
     :rtype: dict
     """
     doc = get_parameters(build_info)
@@ -103,6 +113,8 @@ def make_doc(build_info, test, job_name, key, artifacts, svg_path):
     doc['job_name'] = job_name
     doc['artifacts'] = artifacts
     doc['svg_path'] = svg_path
+    doc['html_path'] = html_path
+    doc['json_path'] = json_path
     doc['etag'] = key.etag
     doc['test_id'] = test.get('test_id', utils.generate_test_id())
     return doc
@@ -125,7 +137,8 @@ def get_test_path(artifacts, job_name, build_number, uploader_build_number):
             job_name, build_number, uploader_build_number, file_path[0])
 
 
-def get_svg_path(artifacts, job_name, build_number, uploader_build_number):
+def make_path(artifacts, job_name, build_number, uploader_build_number,
+              file_suffix):
     """ Return the svg to S3 storage.
 
     :param artifacts:  List of artifacts
@@ -135,7 +148,7 @@ def get_svg_path(artifacts, job_name, build_number, uploader_build_number):
     :return: S3 path.
     :rtype: str
     """
-    file_path = [a for a in artifacts if a.endswith('result.svg')]
+    file_path = [a for a in artifacts if a.endswith(file_suffix)]
     if not file_path:
         return None
     return _make_path(
