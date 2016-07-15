@@ -63,7 +63,7 @@ class TestBundle(DatastoreTest):
                     {
                         "borderColor": "#4B98D9",
                         "lineTension": 0.1,
-                        "label": "AWS (2.00)",
+                        "label": "AWS (2.00 avg  1.00 sd)",
                         "borderWidth": 2,
                         "backgroundColor": "#4B98D9",
                         "data": [1.0, 3.0],
@@ -72,14 +72,15 @@ class TestBundle(DatastoreTest):
                     {
                         "borderColor": "#56CE65",
                         "lineTension": 0.1,
-                        "label": "Azure (2.00)",
+                        "label": "Azure (2.00 avg  0.00 sd)",
                         "borderWidth": 2,
                         "backgroundColor": "#56CE65",
                         "data": [2, None],
                         "fill": False,
                     }
                 ],
-                "title": "Terasort Benchmark Chart"
+                "title": "Terasort Benchmark Chart  (Units: secs  "
+                         "Direction: asc)"
             })
         self.assertEqual(chart, expected)
 

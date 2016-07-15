@@ -83,6 +83,8 @@ def get_recent_test_result(page, limit, bundle=None):
     return cwr_results
 
 
+@app.route('/bundle', defaults={'key': None})
+@app.route('/bundle/<key>')
 @app.route('/test', defaults={'key': None})
 @app.route('/test/<key>')
 def result_by_test_id(key=None):

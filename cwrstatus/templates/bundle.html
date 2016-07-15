@@ -75,7 +75,9 @@
 
 
                 {% for result in results['results'] %}
+
                     {% set rowloop = loop %}
+
                     <tr onclick="toggle_rows('t{{ rowloop.index }}');" class="result">
                         <td colspan="2" class="cloud-list">
                             <a href="javascript:;" title="{{ result['build_id'] }}">{{ result["provider_name"] }}</a>
@@ -96,6 +98,8 @@
 
                     {% for group in result['tests']|groupby('suite') %}
 
+                        {% set rowloop2 = loop %}
+
                         {%  if group.grouper %}
                             <tr class="t{{ rowloop.index }} hide-it suite-title">
                                 <td colspan="5">
@@ -106,6 +110,7 @@
 
                         {% for test in group.list %}
 
+
                             {% if total_time.append(test.get('duration', 0)|float ) %} {% endif %}
 
                             <script>
@@ -113,7 +118,7 @@
                             </script>
 
                             <tr class="t{{ rowloop.index }} hide-it">
-                                <td colspan="2" class="" onclick="open_in_new_window('log-{{ rowloop.index }}{{ loop.index }}')">
+                                <td colspan="2" class="" onclick="open_in_new_window('log-{{ rowloop.index }}{{ rowloop2.index }}{{ loop.index }}')">
                                     <a href="javascript:;">
                                         {{ test["name"] }}
                                     </a>
@@ -125,7 +130,7 @@
                                     {{ display_status_img(test["result"]) }}
                                 </td>
                             </tr>
-                            <tr class="output{{ rowloop.index }}{{ loop.index }} hide-it" id="log-{{ rowloop.index }}{{ loop.index }}">
+                            <tr class="output{{ rowloop.index }}{{ rowloop2.index }}{{ loop.index }} hide-it" id="log-{{ rowloop.index }}{{ rowloop2.index }}{{ loop.index }}">
                                 <td colspan="5">
                                     <textarea cols="7" disabled>
                                         {{ test.get("output", "no output")|safe }}
