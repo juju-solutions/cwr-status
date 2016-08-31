@@ -2,7 +2,6 @@ import logging
 import os
 
 from flask import Flask
-from flask.ext.pymongo import PyMongo
 
 
 def init():
@@ -31,6 +30,5 @@ def init():
 
 app = Flask('cwr')
 init()
-ds = PyMongo(app)   # Data store
 PAGE_LIMIT = 20
 DATA_PROXY = 'http://data.vapour.ws/cwr'
