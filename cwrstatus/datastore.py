@@ -29,10 +29,10 @@ class S3:
         self._dir = value
 
     @classmethod
-    def factory(cls, bucket, directory=None):
-        access_key, secret_key = get_s3_access()
+    def factory(cls, bucket_name, directory, s3conf_path=None):
+        access_key, secret_key = get_s3_access(s3conf_path)
         conn = S3Connection(access_key, secret_key)
-        bucket = conn.get_bucket(bucket)
+        bucket = conn.get_bucket(bucket_name)
         return cls(directory, access_key, secret_key, conn, bucket)
 
     def list(self, skip_folder=True, filter_fun=None):
@@ -50,7 +50,7 @@ class S3:
                 continue
             yield key
 
-    def get(self, path, ensure=True):
+    def get(self, path, notfound='Raise'):
         """
         Get an object from S3.
 
@@ -61,18 +61,22 @@ class S3:
         if self.dir:
             path = "{}/{}".format(self.dir, path)
         key = self.bucket.get_key(path)
-        if ensure and not key:
+        if notfound == 'Raise' and not key:
             raise ValueError(
                 'Key was not found from the path: {}'.format(path))
         return key
 
 
-def get_s3_access():
+def get_s3_access(s3conf_path=None):
     """Return S3 access and secret keys"""
-    s3cfg_path = os.path.join(
-        os.getenv('HOME'), 'cloud-city/juju-qa.s3cfg')
+    if not s3conf_path:
+        s3conf_path = os.path.join(
+            os.getenv('HOME'), 'cloud-city/juju-qa.s3cfg')
+    if not s3conf_path.startswith('/'):
+        s3conf_path = os.path.join(
+            os.getenv('HOME'), s3conf_path)
     config = ConfigParser()
-    with open(s3cfg_path) as fp:
+    with open(s3conf_path) as fp:
         config.readfp(fp)
     access_key = config.get('default', 'access_key')
     secret_key = config.get('default', 'secret_key')

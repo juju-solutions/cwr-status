@@ -3,7 +3,7 @@ import os
 from StringIO import StringIO
 from unittest import TestCase
 
-from flask import Flask, ext
+from flask import Flask
 
 
 class TestCase(TestCase):
@@ -38,17 +38,6 @@ class RequestTest(TestCase):
 
     def tearDown(self):
         self.context.pop()
-
-
-class DatastoreTest(RequestTest):
-
-    def setUp(self):
-        super(DatastoreTest, self).setUp()
-        self.ds = ext.pymongo.PyMongo(self.app)
-
-    def tearDown(self):
-        self.ds.cx.drop_database(self.ds.db._Database__name)
-        super(DatastoreTest, self).tearDown()
 
 
 def make_artifacts():

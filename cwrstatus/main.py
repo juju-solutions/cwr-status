@@ -7,6 +7,7 @@ from flask import (
 )
 
 from cwrstatus.config import app
+from cwrstatus.config import get_config
 from cwrstatus.datastore import S3
 
 
@@ -22,8 +23,9 @@ def index(fragment):
         mimetype = 'application/json'
     else:
         return render_template('404.html', e='Page not found'), 404
-    s3 = S3.factory(app.config['bucket_name'], app.config['prefix'])
-    key = s3.get(fragment)
+    s3 = S3.factory(get_config('bucket_name'), get_config('prefix'),
+                    get_config('s3conf_path'))
+    key = s3.get(fragment, get_config('notfound'))
     if key is None:
         return render_template('404.html', e='Page not found'), 404
     return Response(key.get_contents_as_string(encoding='utf-8'),

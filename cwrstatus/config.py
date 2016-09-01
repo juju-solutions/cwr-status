@@ -2,6 +2,29 @@ import logging
 import os
 
 from flask import Flask
+from ConfigParser import ConfigParser
+
+
+class FakeSectionHead(object):
+    def __init__(self, fp):
+        self.fp = fp
+        self.sechead = '[default]\n'
+
+    def readline(self):
+        if self.sechead:
+            try:
+                return self.sechead
+            finally:
+                self.sechead = None
+        else:
+            return self.fp.readline()
+
+
+def get_config(key):
+    value = config.get('default', key)
+    if not value:
+        return value
+    return value.strip('\'')
 
 
 def init():
@@ -26,9 +49,13 @@ def init():
     else:
         raise ValueError("Error! environment variable 'INI' must be set to "
                          "'production' or 'testing'")
+    with open(config_file) as fp:
+        config.readfp(FakeSectionHead(fp))
     app.config.from_pyfile(config_file)
 
+
 app = Flask('cwr')
+config = ConfigParser()
 init()
 PAGE_LIMIT = 20
 DATA_PROXY = 'http://data.vapour.ws/cwr'
