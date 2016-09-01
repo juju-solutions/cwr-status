@@ -16,3 +16,6 @@ lint:
 coverage:
 	INI=testing venv/bin/nosetests --with-coverage  --cover-package=cwrstatus \
 	 -v -w $(shell pwd)/cwrstatus --cover-inclusive
+
+serve:
+	cd cwrstatus; PYTHONPATH=.. ../venv/bin/python main.py

@@ -10,26 +10,14 @@ __metaclass__ = type
 class S3:
 
     def __init__(self, directory, access_key, secret_key, conn, bucket):
-        self._dir = directory
+        self.dir = directory
         self.access_key = access_key
         self.secret_key = secret_key
         self.conn = conn
         self.bucket = bucket
 
-    @property
-    def dir(self):
-        """Current directory path.
-
-        :rtype: string
-        """
-        return self._dir
-
-    @dir.setter
-    def dir(self, value):
-        self._dir = value
-
     @classmethod
-    def factory(cls, bucket_name, directory, s3conf_path=None):
+    def factory(cls, bucket_name, directory=None, s3conf_path=None):
         access_key, secret_key = get_s3_access(s3conf_path)
         conn = S3Connection(access_key, secret_key)
         bucket = conn.get_bucket(bucket_name)
@@ -50,7 +38,7 @@ class S3:
                 continue
             yield key
 
-    def get(self, path, notfound='Raise'):
+    def get(self, path):
         """
         Get an object from S3.
 
@@ -60,21 +48,12 @@ class S3:
         """
         if self.dir:
             path = "{}/{}".format(self.dir, path)
-        key = self.bucket.get_key(path)
-        if notfound == 'Raise' and not key:
-            raise ValueError(
-                'Key was not found from the path: {}'.format(path))
-        return key
+        return self.bucket.get_key(path)
 
 
-def get_s3_access(s3conf_path=None):
+def get_s3_access(s3conf_path):
     """Return S3 access and secret keys"""
-    if not s3conf_path:
-        s3conf_path = os.path.join(
-            os.getenv('HOME'), 'cloud-city/juju-qa.s3cfg')
-    if not s3conf_path.startswith('/'):
-        s3conf_path = os.path.join(
-            os.getenv('HOME'), s3conf_path)
+    s3conf_path = os.path.join(os.getenv('HOME'), s3conf_path)
     config = ConfigParser()
     with open(s3conf_path) as fp:
         config.readfp(fp)
